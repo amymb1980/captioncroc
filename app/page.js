@@ -543,8 +543,13 @@ const SocialMediaCaptionGenerator = () => {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)' }}>
-                  <span className="text-white font-bold text-sm">🐊</span>
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <img 
+                    src="/logo.png" 
+                    alt="CaptionCroc Logo" 
+                    className="w-8 h-8 opacity-80"
+                    style={{ filter: 'drop-shadow(none)' }}
+                  />
                 </div>
                 <h2 className="text-xl font-bold text-gray-800">
                   {authMode === 'login' ? 'Welcome back to ' : 'Join '}
@@ -850,7 +855,14 @@ const SocialMediaCaptionGenerator = () => {
         <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             <div className="text-center mb-6">
-              <div className="text-6xl mb-4">🐊</div>
+              <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <img 
+                  src="/logo.png" 
+                  alt="CaptionCroc Logo" 
+                  className="w-16 h-16 opacity-80"
+                  style={{ filter: 'drop-shadow(none)' }}
+                />
+              </div>
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Ready to Upgrade?</h2>
               <p className="text-gray-600">Unlock unlimited snappy captions and styling magic!</p>
             </div>
@@ -900,8 +912,13 @@ const SocialMediaCaptionGenerator = () => {
         <div className="min-h-screen bg-gradient-to-br from-teal-50 to-orange-50 flex items-center justify-center">
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">🐊</span>
+              <div className="w-20 h-20 flex items-center justify-center">
+                <img 
+                  src="/logo.png" 
+                  alt="CaptionCroc Logo" 
+                  className="w-16 h-16 opacity-80"
+                  style={{ filter: 'drop-shadow(none)' }}
+                />
               </div>
               <h1 className="text-4xl font-bold">
                 <span style={{ color: '#EA8953' }}>Caption</span>
@@ -936,8 +953,13 @@ const SocialMediaCaptionGenerator = () => {
                   </button>
                   
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-                      <span className="text-white font-bold text-lg">🐊</span>
+                    <div className="w-16 h-16 flex items-center justify-center">
+                      <img 
+                        src="/logo.png" 
+                        alt="CaptionCroc Logo" 
+                        className="w-12 h-12 opacity-80"
+                        style={{ filter: 'drop-shadow(none)' }}
+                      />
                     </div>
                     <h1 className="text-4xl font-bold">
                       <span style={{ color: '#EA8953' }}>Caption</span>
