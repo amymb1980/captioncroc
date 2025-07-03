@@ -547,7 +547,9 @@ const SocialMediaCaptionGenerator = () => {
                   <span className="text-white font-bold text-sm">🐊</span>
                 </div>
                 <h2 className="text-xl font-bold text-gray-800">
-                  {authMode === 'login' ? 'Welcome back' : 'Join CaptionCroc'}
+                  {authMode === 'login' ? 'Welcome back to ' : 'Join '}
+                  <span style={{ color: '#EA8953' }}>Caption</span>
+                  <span style={{ color: '#007B40' }}>Croc</span>
                 </h2>
               </div>
               <button
@@ -669,14 +671,13 @@ const SocialMediaCaptionGenerator = () => {
           <div className="text-center">
             {/* Logo & Brand */}
             <div className="flex items-center justify-center gap-3 mb-8">
-             <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
-              <img 
-                src="/logo-small.png" 
-                alt="CaptionCroc Logo" 
-                className="w-full h-full object-contain"
-              />
-            </div>
-              <h1 className="text-5xl font-bold bg-gradient-to-r from-teal-600 to-teal-800 bg-clip-text text-transparent">CaptionCroc</h1>
+              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-2xl">🐊</span>
+              </div>
+              <h1 className="text-5xl font-bold">
+                <span style={{ color: '#EA8953' }}>Caption</span>
+                <span style={{ color: '#007B40' }}>Croc</span>
+              </h1>
             </div>
             
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
@@ -887,7 +888,10 @@ const SocialMediaCaptionGenerator = () => {
               <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-xl">🐊</span>
               </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-600 to-teal-800 bg-clip-text text-transparent">CaptionCroc</h1>
+              <h1 className="text-4xl font-bold">
+                <span style={{ color: '#EA8953' }}>Caption</span>
+                <span style={{ color: '#007B40' }}>Croc</span>
+              </h1>
             </div>
             <p className="text-xl text-gray-600 mb-8">Please sign in to continue</p>
             <button
@@ -916,7 +920,10 @@ const SocialMediaCaptionGenerator = () => {
                     <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
                       <span className="text-white font-bold text-lg">🐊</span>
                     </div>
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-600 to-teal-800 bg-clip-text text-transparent">CaptionCroc</h1>
+                    <h1 className="text-4xl font-bold">
+                      <span style={{ color: '#EA8953' }}>Caption</span>
+                      <span style={{ color: '#007B40' }}>Croc</span>
+                    </h1>
                     {userPlan === 'pro' && <Crown className="text-yellow-500" size={24} />}
                   </div>
                   
