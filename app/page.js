@@ -671,7 +671,7 @@ const SocialMediaCaptionGenerator = () => {
             <div className="flex items-center justify-center gap-3 mb-8">
              <div className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
               <img 
-                src="/logo.png" 
+                src="/logo-small.png" 
                 alt="CaptionCroc Logo" 
                 className="w-full h-full object-contain"
               />
