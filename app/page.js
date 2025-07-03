@@ -671,14 +671,14 @@ const SocialMediaCaptionGenerator = () => {
           <div className="text-center">
             {/* Logo & Brand */}
             <div className="flex items-center justify-center gap-3 mb-8">
-            <div className="w-16 h-16 flex items-center justify-center">
-              <img 
-                src="/logo-small.png" 
-                alt="CaptionCroc Logo" 
-                className="w-12 h-12 opacity-80"
-                style={{ filter: 'drop-shadow(none)' }}
-              />
-            </div>
+            <div className="w-20 h-20 flex items-center justify-center">
+  <img 
+    src="/logo.png" 
+    alt="CaptionCroc Logo" 
+    className="w-16 h-16 opacity-80"
+    style={{ filter: 'drop-shadow(none)' }}
+  />
+</div>
               <h1 className="text-5xl font-bold">
                 <span style={{ color: '#EA8953' }}>Caption</span>
                 <span style={{ color: '#007B40' }}>Croc</span>
