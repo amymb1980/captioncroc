@@ -543,7 +543,7 @@ const SocialMediaCaptionGenerator = () => {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-orange-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)' }}>
                   <span className="text-white font-bold text-sm">🐊</span>
                 </div>
                 <h2 className="text-xl font-bold text-gray-800">
@@ -634,7 +634,9 @@ const SocialMediaCaptionGenerator = () => {
               <button
                 onClick={handleSubmit}
                 disabled={authLoading}
-                className="w-full bg-gradient-to-r from-teal-600 to-orange-500 text-white py-3 px-4 rounded-lg font-medium hover:from-teal-700 hover:to-orange-600 disabled:opacity-50 transition-all"
+                className="w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium transition-all" style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)', color: 'white' }}
+                onMouseEnter={(e) => e.target.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.target.style.opacity = '1'}
               >
                 {authLoading ? 'Processing...' : authMode === 'login' ? 'Sign In' : 'Create Account'}
               </button>
@@ -643,7 +645,8 @@ const SocialMediaCaptionGenerator = () => {
             <div className="mt-6 text-center">
               <button
                 onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-                className="text-teal-600 hover:text-teal-700 text-sm font-medium"
+                className="text-sm font-medium hover:opacity-80 transition-colors"
+                style={{ color: '#007B40' }}
               >
                 {authMode === 'login' 
                   ? "Don't have an account? Sign up" 
@@ -671,14 +674,9 @@ const SocialMediaCaptionGenerator = () => {
           <div className="text-center">
             {/* Logo & Brand */}
             <div className="flex items-center justify-center gap-3 mb-8">
-            <div className="w-24 h-24 flex items-center justify-center">
-              <img 
-                src="/logo.png" 
-                alt="CaptionCroc Logo" 
-                className="w-20 h-20 opacity-80"
-                style={{ filter: 'drop-shadow(none)' }}
-              />
-            </div>
+              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-2xl">🐊</span>
+              </div>
               <h1 className="text-5xl font-bold">
                 <span style={{ color: '#EA8953' }}>Caption</span>
                 <span style={{ color: '#007B40' }}>Croc</span>
@@ -687,7 +685,7 @@ const SocialMediaCaptionGenerator = () => {
             
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
               Snappy captions<br />
-              <span className="bg-gradient-to-r from-teal-600 to-orange-500 bg-clip-text text-transparent">that bite!</span>
+              <span style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>that bite!</span>
             </h2>
             
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
@@ -700,7 +698,10 @@ const SocialMediaCaptionGenerator = () => {
                   setAuthMode('signup'); 
                   setShowAuthModal(true);
                 }}
-                className="bg-gradient-to-r from-teal-600 to-orange-500 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:from-teal-700 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                className="text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)' }}
+                onMouseEnter={(e) => e.target.style.opacity = '0.9'}
+                onMouseLeave={(e) => e.target.style.opacity = '1'}
               >
                 Start Creating Captions Free
               </button>
@@ -709,7 +710,10 @@ const SocialMediaCaptionGenerator = () => {
                   setAuthMode('login'); 
                   setShowAuthModal(true);
                 }}
-                className="border-2 border-teal-600 text-teal-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-teal-50 transition-all"
+                className="border-2 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-opacity-10 transition-all"
+                style={{ borderColor: '#007B40', color: '#007B40' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#007B4010'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
               >
                 Sign In
               </button>
@@ -816,16 +820,17 @@ const SocialMediaCaptionGenerator = () => {
       </div>
 
       {/* Final CTA */}
-      <div className="bg-gradient-to-r from-teal-600 to-orange-500 py-20">
+      <div className="py-20" style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)' }}>
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h3 className="text-3xl font-bold text-white mb-4">Ready to create snappy captions?</h3>
-          <p className="text-xl text-teal-100 mb-8">Join thousands of creators who never run out of bite-sized content ideas</p>
+          <p className="text-xl mb-8" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Join thousands of creators who never run out of bite-sized content ideas</p>
           <button
             onClick={() => {
               setAuthMode('signup'); 
               setShowAuthModal(true);
             }}
-            className="bg-white text-teal-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-all shadow-lg"
+            className="bg-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-all shadow-lg"
+            style={{ color: '#007B40' }}
           >
             Start Creating Free Captions
           </button>
@@ -901,7 +906,10 @@ const SocialMediaCaptionGenerator = () => {
             <p className="text-xl text-gray-600 mb-8">Please sign in to continue</p>
             <button
               onClick={() => {setAuthMode('login'); setShowAuthModal(true);}}
-              className="bg-gradient-to-r from-teal-600 to-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:from-teal-700 hover:to-orange-600 transition-all"
+              className="text-white px-8 py-3 rounded-lg font-semibold transition-all"
+              style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)' }}
+              onMouseEnter={(e) => e.target.style.opacity = '0.9'}
+              onMouseLeave={(e) => e.target.style.opacity = '1'}
             >
               Sign In
             </button>
@@ -916,7 +924,8 @@ const SocialMediaCaptionGenerator = () => {
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={() => setShowLandingPage(true)}
-                    className="text-teal-600 hover:text-teal-700 text-sm font-medium transition-colors"
+                    className="text-sm font-medium transition-colors hover:opacity-80"
+                    style={{ color: '#007B40' }}
                   >
                     ← Back to Home
                   </button>
@@ -961,7 +970,8 @@ const SocialMediaCaptionGenerator = () => {
                   ) : (
                     <button
                       onClick={() => {setAuthMode('login'); setShowAuthModal(true);}}
-                      className="text-teal-600 hover:text-teal-700 text-sm font-medium transition-colors"
+                      className="text-sm font-medium transition-colors hover:opacity-80"
+                      style={{ color: '#007B40' }}
                     >
                       Sign In
                     </button>
@@ -992,8 +1002,11 @@ const SocialMediaCaptionGenerator = () => {
                   {userPlan !== 'pro' && (
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
                       <div 
-                        className="bg-gradient-to-r from-teal-500 to-orange-400 h-2 rounded-full transition-all"
-                        style={{ width: `${(dailyUsage / currentLimits.dailyLimit) * 100}%` }}
+                        className="h-2 rounded-full transition-all"
+                        style={{ 
+                          width: `${(dailyUsage / currentLimits.dailyLimit) * 100}%`,
+                          background: 'linear-gradient(135deg, #EA8953, #007B40)'
+                        }}
                       ></div>
                     </div>
                   )}
@@ -1017,8 +1030,11 @@ const SocialMediaCaptionGenerator = () => {
                   {userPlan !== 'pro' && (
                     <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
                       <div 
-                        className="bg-gradient-to-r from-orange-400 to-red-400 h-2 rounded-full transition-all"
-                        style={{ width: `${(favouriteCount / currentLimits.maxFavourites) * 100}%` }}
+                        className="h-2 rounded-full transition-all"
+                        style={{ 
+                          width: `${(favouriteCount / currentLimits.maxFavourites) * 100}%`,
+                          background: 'linear-gradient(135deg, #EA8953, #007B40)'
+                        }}
                       ></div>
                     </div>
                   )}
@@ -1102,11 +1118,12 @@ const SocialMediaCaptionGenerator = () => {
                                 }}
                                 className={`p-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2 relative ${
                                   platform === p.name && !isLocked
-                                    ? 'border-teal-500 bg-teal-50 text-teal-700'
+                                    ? 'bg-opacity-10 text-gray-800'
                                     : isLocked
                                     ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
                                     : 'border-gray-200 hover:border-gray-300'
                                 }`}
+                                style={platform === p.name && !isLocked ? { borderColor: '#007B40', backgroundColor: '#007B4010' } : {}}
                               >
                                 <Icon size={16} />
                                 <span className="text-sm font-medium">{p.name}</span>
@@ -1137,7 +1154,10 @@ const SocialMediaCaptionGenerator = () => {
                           value={topic}
                           onChange={(e) => setTopic(e.target.value)}
                           placeholder="e.g., sustainable fashion, productivity tips, weekend vibes"
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': '#007B40' }}
+                          onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                          onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                         />
                       </div>
 
@@ -1225,7 +1245,10 @@ const SocialMediaCaptionGenerator = () => {
                       <button
                         onClick={generateCaption}
                         disabled={isGenerating || !topic.trim() || !canGenerateCaption()}
-                        className="w-full bg-gradient-to-r from-teal-600 to-orange-500 text-white py-3 px-6 rounded-lg font-medium hover:from-teal-700 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        className="w-full text-white py-3 px-6 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                        style={{ background: isGenerating || !topic.trim() || !canGenerateCaption() ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
+                        onMouseEnter={(e) => { if (!e.target.disabled) e.target.style.opacity = '0.9' }}
+                        onMouseLeave={(e) => { if (!e.target.disabled) e.target.style.opacity = '1' }}
                       >
                         {isGenerating ? (
                           <>
@@ -1513,11 +1536,12 @@ const SocialMediaCaptionGenerator = () => {
 
                   <div className="grid md:grid-cols-3 gap-6">
                     {/* Free Plan */}
-                    <div className={`border-2 rounded-lg p-6 ${userPlan === 'free' ? 'border-teal-500 bg-teal-50' : 'border-gray-200'}`}>
+                    <div className={`border-2 rounded-lg p-6 ${userPlan === 'free' ? 'bg-opacity-10' : 'border-gray-200'}`}
+                         style={userPlan === 'free' ? { borderColor: '#007B40', backgroundColor: '#007B4010' } : {}}>
                       <div className="text-center mb-6">
                         <h3 className="text-xl font-bold text-gray-800">Free Plan</h3>
                         <div className="text-3xl font-bold text-green-600 mt-2">$0<span className="text-lg text-gray-500">/month</span></div>
-                        {userPlan === 'free' && <span className="inline-block bg-teal-500 text-white px-3 py-1 rounded-full text-sm mt-2">Current Plan</span>}
+                        {userPlan === 'free' && <span className="inline-block text-white px-3 py-1 rounded-full text-sm mt-2" style={{ background: '#007B40' }}>Current Plan</span>}
                       </div>
                       <ul className="space-y-3 text-sm">
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 3 captions per day</li>
@@ -1529,14 +1553,15 @@ const SocialMediaCaptionGenerator = () => {
                     </div>
 
                     {/* Pro Plan */}
-                    <div className={`border-2 rounded-lg p-6 relative ${userPlan === 'pro' ? 'border-teal-500 bg-teal-50' : 'border-teal-500'}`}>
+                    <div className={`border-2 rounded-lg p-6 relative ${userPlan === 'pro' ? 'bg-opacity-10' : 'border-2'}`}
+                         style={userPlan === 'pro' ? { borderColor: '#007B40', backgroundColor: '#007B4010' } : { borderColor: '#007B40' }}>
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <span className="bg-teal-500 text-white px-3 py-1 rounded-full text-sm">Popular</span>
+                        <span className="text-white px-3 py-1 rounded-full text-sm" style={{ background: '#007B40' }}>Popular</span>
                       </div>
                       <div className="text-center mb-6">
                         <h3 className="text-xl font-bold text-gray-800">Pro Plan</h3>
                         <div className="text-3xl font-bold text-teal-600 mt-2">$9.99<span className="text-lg text-gray-500">/month</span></div>
-                        {userPlan === 'pro' && <span className="inline-block bg-teal-500 text-white px-3 py-1 rounded-full text-sm mt-2">Current Plan</span>}
+                        {userPlan === 'pro' && <span className="inline-block text-white px-3 py-1 rounded-full text-sm mt-2" style={{ background: '#007B40' }}>Current Plan</span>}
                       </div>
                       <ul className="space-y-3 text-sm">
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Unlimited caption generation</li>
@@ -1549,7 +1574,8 @@ const SocialMediaCaptionGenerator = () => {
                       {userPlan !== 'pro' && (
                         <button 
                           onClick={() => setUserPlan('pro')}
-                          className="w-full mt-6 bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors"
+                          className="w-full mt-6 text-white py-2 px-4 rounded-lg hover:opacity-90 transition-colors"
+                          style={{ background: '#007B40' }}
                         >
                           Upgrade to Pro
                         </button>
