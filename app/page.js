@@ -17,6 +17,10 @@ const SocialMediaCaptionGenerator = () => {
   const [showVariations, setShowVariations] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
+
+  if (typeof window !== 'undefined') {
+  window.supabase = supabase;
+}
   
   // Subscription & Credits State
   const [userPlan, setUserPlan] = useState('free'); // 'free', 'pro', 'credits'
