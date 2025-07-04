@@ -2,7 +2,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link href="https://unpkg.com/tailwindcss@^3.0/dist/tailwind.min.css" rel="stylesheet" />
+        <script src="https://cdn.tailwindcss.com/3.3.0"></script>
       </head>
       <body>{children}</body>
     </html>
