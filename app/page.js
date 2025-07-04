@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Copy, Sparkles, Instagram, Twitter, Facebook, Linkedin, AlertCircle, Save, Download, Trash2, ExternalLink, Calendar, BarChart3, Star, Heart, Crown, Lock, Zap, ShoppingBag } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const SocialMediaCaptionGenerator = () => {
   const [platform, setPlatform] = useState('Instagram');
@@ -33,12 +34,120 @@ const SocialMediaCaptionGenerator = () => {
   const [showStylingPanel, setShowStylingPanel] = useState(false);
   const [originalCaption, setOriginalCaption] = useState('');
   
-  // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Authentication State - Using Supabase
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const [authLoading, setAuthLoading] = useState(false);
+
+  // Check user authentication status on component mount
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          setShowLandingPage(false);
+          await loadUserProfile(session.user.id);
+          await loadUserCaptions(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error checking user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        setShowLandingPage(false);
+        await loadUserProfile(session.user.id);
+        await loadUserCaptions(session.user.id);
+      } else {
+        setUser(null);
+        setShowLandingPage(true);
+        setSavedCaptions([]);
+        setUserPlan('free');
+        setDailyUsage(0);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load user profile data
+  const loadUserProfile = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error loading profile:', error);
+        return;
+      }
+
+      if (data) {
+        setUserPlan(data.plan || 'free');
+        setDailyUsage(data.daily_usage || 0);
+      } else {
+        // Create profile if it doesn't exist
+        await createUserProfile(userId);
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+    }
+  };
+
+  // Create user profile
+  const createUserProfile = async (userId) => {
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .insert([
+          {
+            id: userId,
+            email: user?.email,
+            name: user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
+            plan: 'free',
+            daily_usage: 0
+          }
+        ]);
+
+      if (error) {
+        console.error('Error creating profile:', error);
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+    }
+  };
+
+  // Load user captions
+  const loadUserCaptions = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('captions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading captions:', error);
+        return;
+      }
+
+      setSavedCaptions(data || []);
+    } catch (error) {
+      console.error('Error loading captions:', error);
+    }
+  };
 
   // Subscription Configuration
   const subscriptionLimits = {
@@ -85,7 +194,7 @@ const SocialMediaCaptionGenerator = () => {
 
   const currentPlatform = platforms.find(p => p.name === platform);
   const currentLimits = subscriptionLimits[userPlan] || subscriptionLimits.free;
-  const favouriteCount = savedCaptions.filter(c => c.isFavourite).length;
+  const favouriteCount = savedCaptions.filter(c => c.is_favourite).length;
 
   const canGenerateCaption = () => {
     if (userPlan === 'pro') return true;
@@ -200,29 +309,41 @@ const SocialMediaCaptionGenerator = () => {
     setGeneratedCaption(styledCaption);
   };
 
-  // Authentication Functions
+  // Authentication Functions using Supabase
   const handleEmailAuth = async (email, password, mode) => {
     setAuthLoading(true);
     
     try {
-      // For demo purposes, create a mock user
-      const mockUser = {
-        id: Date.now(),
-        email: email,
-        name: email.split('@')[0],
-        plan: 'free',
-        avatar: `https://ui-avatars.com/api/?name=${email.split('@')[0]}&background=008080&color=fff`
-      };
+      if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: email.split('@')[0]
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.user && !data.session) {
+          alert('Check your email for the confirmation link!');
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+      }
       
-      setUser(mockUser);
-      setIsAuthenticated(true);
-      setUserPlan('free');
       setShowAuthModal(false);
-      setShowLandingPage(false);
       
     } catch (error) {
       console.error('Auth error:', error);
-      alert('Authentication failed. Please try again.');
+      alert(error.message || 'Authentication failed. Please try again.');
     }
     
     setAuthLoading(false);
@@ -232,20 +353,14 @@ const SocialMediaCaptionGenerator = () => {
     setAuthLoading(true);
     
     try {
-      const mockUser = {
-        id: Date.now(),
-        email: `user@${provider.toLowerCase()}.com`,
-        name: `${provider} User`,
-        plan: 'free',
-        avatar: `https://ui-avatars.com/api/?name=${provider}+User&background=008080&color=fff`,
-        provider: provider.toLowerCase()
-      };
-      
-      setUser(mockUser);
-      setIsAuthenticated(true);
-      setUserPlan('free');
-      setShowAuthModal(false);
-      setShowLandingPage(false);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: provider.toLowerCase(),
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+
+      if (error) throw error;
       
     } catch (error) {
       console.error('OAuth error:', error);
@@ -255,14 +370,12 @@ const SocialMediaCaptionGenerator = () => {
     setAuthLoading(false);
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    setUserPlan('free');
-    setSavedCaptions([]);
-    setDailyUsage(0);
-    setCredits(0);
-    setShowLandingPage(true);
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const generateCaption = async () => {
@@ -271,7 +384,7 @@ const SocialMediaCaptionGenerator = () => {
       return;
     }
 
-    if (!isAuthenticated) {
+    if (!user) {
       setShowAuthModal(true);
       return;
     }
@@ -298,15 +411,21 @@ const SocialMediaCaptionGenerator = () => {
       setShowVariations(true);
       setOriginalCaption(variations[0]);
       setShowStylingPanel(true);
+
+      // Update daily usage in database
+      if (userPlan === 'free') {
+        const newUsage = dailyUsage + 1;
+        setDailyUsage(newUsage);
+
+        await supabase
+          .from('user_profiles')
+          .update({ daily_usage: newUsage })
+          .eq('id', user.id);
+      }
+      
     } catch (err) {
       setError('Failed to generate caption. Please try again.');
     }
-    
-    // Deduct usage (no more credits system!)
-    if (userPlan === 'free') {
-      setDailyUsage(prev => prev + 1);
-    }
-    // Pro users get unlimited, no deduction needed
     
     setIsGenerating(false);
   };
@@ -395,8 +514,8 @@ const SocialMediaCaptionGenerator = () => {
     return finalCaption;
   };
 
-  const saveCaption = () => {
-    if (!isAuthenticated) {
+  const saveCaption = async () => {
+    if (!user) {
       setShowAuthModal(true);
       return;
     }
@@ -406,41 +525,78 @@ const SocialMediaCaptionGenerator = () => {
       return;
     }
 
-    const newCaption = {
-      id: Date.now(),
-      date: new Date().toLocaleDateString(),
-      time: new Date().toLocaleTimeString(),
-      platform,
-      topic,
-      tone,
-      caption: generatedCaption,
-      charCount: generatedCaption.length,
-      isFavourite: false
-    };
+    try {
+      const { data, error } = await supabase
+        .from('captions')
+        .insert([
+          {
+            user_id: user.id,
+            platform,
+            topic,
+            tone,
+            caption: generatedCaption,
+            is_favourite: false
+          }
+        ])
+        .select()
+        .single();
 
-    setSavedCaptions(prev => [newCaption, ...prev]);
-    alert('Caption saved successfully!');
+      if (error) throw error;
+
+      // Add to local state
+      setSavedCaptions(prev => [data, ...prev]);
+      alert('Caption saved successfully!');
+      
+    } catch (error) {
+      console.error('Error saving caption:', error);
+      alert('Failed to save caption. Please try again.');
+    }
   };
 
-  const toggleFavourite = (id) => {
+  const toggleFavourite = async (id) => {
     const caption = savedCaptions.find(c => c.id === id);
     
-    if (!caption.isFavourite && !canAddFavourite()) {
+    if (!caption.is_favourite && !canAddFavourite()) {
       setShowUpgradeModal(true);
       return;
     }
 
-    setSavedCaptions(prev => 
-      prev.map(caption => 
-        caption.id === id 
-          ? { ...caption, isFavourite: !caption.isFavourite }
-          : caption
-      )
-    );
+    try {
+      const newFavouriteStatus = !caption.is_favourite;
+      
+      const { error } = await supabase
+        .from('captions')
+        .update({ is_favourite: newFavouriteStatus })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setSavedCaptions(prev => 
+        prev.map(caption => 
+          caption.id === id 
+            ? { ...caption, is_favourite: newFavouriteStatus }
+            : caption
+        )
+      );
+    } catch (error) {
+      console.error('Error updating favourite:', error);
+    }
   };
 
-  const deleteCaption = (id) => {
-    setSavedCaptions(prev => prev.filter(caption => caption.id !== id));
+  const deleteCaption = async (id) => {
+    try {
+      const { error } = await supabase
+        .from('captions')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setSavedCaptions(prev => prev.filter(caption => caption.id !== id));
+    } catch (error) {
+      console.error('Error deleting caption:', error);
+      alert('Failed to delete caption. Please try again.');
+    }
   };
 
   const copyToClipboard = async (text) => {
@@ -466,8 +622,8 @@ const SocialMediaCaptionGenerator = () => {
         content: caption.caption,
         topic: caption.topic,
         tone: caption.tone,
-        created_at: `${caption.date} ${caption.time}`,
-        char_count: caption.charCount
+        created_at: caption.created_at,
+        char_count: caption.caption.length
       };
 
       const response = await fetch(exportWebhook, {
@@ -492,13 +648,13 @@ const SocialMediaCaptionGenerator = () => {
     const csvContent = [
       ['Date', 'Platform', 'Topic', 'Tone', 'Caption', 'Character Count', 'Favourite'].join(','),
       ...savedCaptions.map(caption => [
-        caption.date,
+        new Date(caption.created_at).toLocaleDateString(),
         caption.platform,
         caption.topic,
         caption.tone,
         `"${caption.caption.replace(/"/g, '""')}"`,
-        caption.charCount,
-        caption.isFavourite ? 'Yes' : 'No'
+        caption.caption.length,
+        caption.is_favourite ? 'Yes' : 'No'
       ].join(','))
     ].join('\n');
 
@@ -510,6 +666,25 @@ const SocialMediaCaptionGenerator = () => {
     a.click();
     window.URL.revokeObjectURL(url);
   };
+
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
+            <img 
+              src="/logo.png" 
+              alt="CaptionCroc Logo" 
+              className="w-16 h-16 opacity-80 animate-pulse"
+              style={{ filter: 'drop-shadow(none)' }}
+            />
+          </div>
+          <div className="text-lg text-gray-600">Loading CaptionCroc...</div>
+        </div>
+      </div>
+    );
+  }
 
   const AuthModal = () => {
     const [email, setEmail] = useState('');
@@ -579,14 +754,14 @@ const SocialMediaCaptionGenerator = () => {
               </button>
               
               <button
-                onClick={() => handleOAuthLogin('Facebook')}
+                onClick={() => handleOAuthLogin('GitHub')}
                 disabled={authLoading}
                 className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
-                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">f</span>
+                <div className="w-5 h-5 bg-gray-800 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">G</span>
                 </div>
-                <span className="font-medium text-gray-700">Continue with Facebook</span>
+                <span className="font-medium text-gray-700">Continue with GitHub</span>
               </button>
             </div>
 
@@ -606,7 +781,10 @@ const SocialMediaCaptionGenerator = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                   placeholder="your@email.com"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': '#007B40' }}
+                  onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                  onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                 />
               </div>
               
@@ -618,7 +796,10 @@ const SocialMediaCaptionGenerator = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                   placeholder="••••••••"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': '#007B40' }}
+                  onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                  onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                 />
               </div>
               
@@ -631,7 +812,10 @@ const SocialMediaCaptionGenerator = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                     placeholder="••••••••"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ '--tw-ring-color': '#007B40' }}
+                    onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                    onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                   />
                 </div>
               )}
@@ -639,9 +823,10 @@ const SocialMediaCaptionGenerator = () => {
               <button
                 onClick={handleSubmit}
                 disabled={authLoading}
-                className="w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium transition-all" style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)', color: 'white' }}
-                onMouseEnter={(e) => e.target.style.opacity = '0.9'}
-                onMouseLeave={(e) => e.target.style.opacity = '1'}
+                className="w-full text-white py-3 px-4 rounded-lg font-medium disabled:opacity-50 transition-all"
+                style={{ background: authLoading ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
+                onMouseEnter={(e) => { if (!e.target.disabled) e.target.style.opacity = '0.9' }}
+                onMouseLeave={(e) => { if (!e.target.disabled) e.target.style.opacity = '1' }}
               >
                 {authLoading ? 'Processing...' : authMode === 'login' ? 'Sign In' : 'Create Account'}
               </button>
@@ -740,7 +925,7 @@ const SocialMediaCaptionGenerator = () => {
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>3 captions daily</span>
+                <span>10 captions daily</span>
               </div>
             </div>
           </div>
@@ -908,7 +1093,7 @@ const SocialMediaCaptionGenerator = () => {
     <>
       {showLandingPage ? (
         <LandingPage />
-      ) : !isAuthenticated ? (
+      ) : !user ? (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 to-orange-50 flex items-center justify-center">
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-6">
@@ -969,7 +1154,7 @@ const SocialMediaCaptionGenerator = () => {
                   </div>
                   
                   {/* User Menu */}
-                  {isAuthenticated && user ? (
+                  {user && (
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => window.open('mailto:support@captioncroc.com', '_blank')}
@@ -979,13 +1164,15 @@ const SocialMediaCaptionGenerator = () => {
                         <Heart size={12} />
                         Help
                       </button>
-                      <img 
-                        src={user.avatar} 
-                        alt={user.name}
-                        className="w-8 h-8 rounded-full"
-                      />
+                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-gray-600 text-sm font-medium">
+                          {user.email?.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                       <div className="text-right">
-                        <div className="text-sm font-medium text-gray-800">{user.name}</div>
+                        <div className="text-sm font-medium text-gray-800">
+                          {user.user_metadata?.name || user.email?.split('@')[0] || 'User'}
+                        </div>
                         <button 
                           onClick={handleLogout}
                           className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
@@ -994,14 +1181,6 @@ const SocialMediaCaptionGenerator = () => {
                         </button>
                       </div>
                     </div>
-                  ) : (
-                    <button
-                      onClick={() => {setAuthMode('login'); setShowAuthModal(true);}}
-                      className="text-sm font-medium transition-colors hover:opacity-80"
-                      style={{ color: '#007B40' }}
-                    >
-                      Sign In
-                    </button>
                   )}
                 </div>
                 <p className="text-gray-600 text-lg">Snappy captions that bite!</p>
@@ -1085,8 +1264,8 @@ const SocialMediaCaptionGenerator = () => {
                   }`}
                 >
                   Saved Captions ({savedCaptions.length})
-                  {savedCaptions.filter(c => c.isFavourite).length > 0 && (
-                    <span className="ml-1 text-orange-500">★{savedCaptions.filter(c => c.isFavourite).length}</span>
+                  {savedCaptions.filter(c => c.is_favourite).length > 0 && (
+                    <span className="ml-1 text-orange-500">★{savedCaptions.filter(c => c.is_favourite).length}</span>
                   )}
                 </button>
                 <button
@@ -1116,9 +1295,9 @@ const SocialMediaCaptionGenerator = () => {
                     <div className="flex items-start gap-3">
                       <AlertCircle className="text-teal-600 mt-0.5" size={20} />
                       <div>
-                        <h3 className="font-medium text-teal-800 mb-1">Demo Mode</h3>
+                        <h3 className="font-medium text-teal-800 mb-1">Real Supabase Database Connected! 🎉</h3>
                         <p className="text-sm text-teal-700">
-                          This is a demo version. In production, connect to your AI backend for real snappy caption generation.
+                          Your account, captions, and favorites are now stored in a real database. Ready to add AI next!
                         </p>
                       </div>
                     </div>
@@ -1200,7 +1379,10 @@ const SocialMediaCaptionGenerator = () => {
                             }
                             setTone(selectedTone);
                           }}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': '#007B40' }}
+                          onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                          onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                         >
                           {tones.map(t => (
                             <option 
@@ -1226,7 +1408,10 @@ const SocialMediaCaptionGenerator = () => {
                           value={callToAction}
                           onChange={(e) => setCallToAction(e.target.value)}
                           placeholder="e.g., Check out our website, Share your thoughts, Like if you agree"
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': '#007B40' }}
+                          onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                          onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                         />
                       </div>
 
@@ -1298,16 +1483,16 @@ const SocialMediaCaptionGenerator = () => {
                       {!canGenerateCaption() && (
                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                           <p className="text-amber-700 text-sm">
-                            {!isAuthenticated 
+                            {!user 
                               ? 'Sign in to start generating snappy captions!'
                               : `You've used ${dailyUsage}/${currentLimits.dailyLimit} captions today. Upgrade to Pro Croc for unlimited access!`
                             }
                           </p>
                           <button 
-                            onClick={() => !isAuthenticated ? setShowAuthModal(true) : setShowUpgradeModal(true)}
+                            onClick={() => !user ? setShowAuthModal(true) : setShowUpgradeModal(true)}
                             className="mt-2 text-sm bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700 transition-colors"
                           >
-                            {!isAuthenticated ? 'Sign In' : 'Upgrade to Pro Croc'}
+                            {!user ? 'Sign In' : 'Upgrade to Pro Croc'}
                           </button>
                         </div>
                       )}
@@ -1521,11 +1706,75 @@ const SocialMediaCaptionGenerator = () => {
 
               {activeTab === 'saved' && (
                 <div>
-                  <div className="text-center py-12">
-                    <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600 text-lg">No captions saved yet</p>
-                    <p className="text-gray-500">Generate and save captions to see them here</p>
-                  </div>
+                  {savedCaptions.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
+                      <p className="text-gray-600 text-lg">No captions saved yet</p>
+                      <p className="text-gray-500">Generate and save captions to see them here</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-2xl font-bold text-gray-800">Saved Captions</h2>
+                        <button
+                          onClick={exportAllCaptions}
+                          className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition-colors"
+                        >
+                          <Download size={16} />
+                          Export All CSV
+                        </button>
+                      </div>
+                      
+                      <div className="grid gap-4">
+                        {savedCaptions.map((caption) => (
+                          <div key={caption.id} className="border border-gray-200 rounded-lg p-4">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-gray-700">{caption.platform}</span>
+                                <span className="text-xs text-gray-500">•</span>
+                                <span className="text-xs text-gray-500">{caption.tone}</span>
+                                <span className="text-xs text-gray-500">•</span>
+                                <span className="text-xs text-gray-500">{new Date(caption.created_at).toLocaleDateString()}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => toggleFavourite(caption.id)}
+                                  className={`p-1 rounded ${caption.is_favourite ? 'text-orange-500' : 'text-gray-400 hover:text-orange-500'}`}
+                                >
+                                  <Star size={16} fill={caption.is_favourite ? 'currentColor' : 'none'} />
+                                </button>
+                                <button
+                                  onClick={() => copyToClipboard(caption.caption)}
+                                  className="p-1 text-gray-400 hover:text-gray-600"
+                                >
+                                  <Copy size={16} />
+                                </button>
+                                <button
+                                  onClick={() => deleteCaption(caption.id)}
+                                  className="p-1 text-red-400 hover:text-red-600"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                            <h3 className="font-medium text-gray-800 mb-2">{caption.topic}</h3>
+                            <p className="text-sm text-gray-600 whitespace-pre-wrap">{caption.caption}</p>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-xs text-gray-500">{caption.caption.length} characters</span>
+                              <button
+                                onClick={() => exportToScheduler(caption)}
+                                disabled={isExporting}
+                                className="text-xs text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                              >
+                                <ExternalLink size={12} className="inline mr-1" />
+                                Export
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1546,7 +1795,10 @@ const SocialMediaCaptionGenerator = () => {
                           value={exportWebhook}
                           onChange={(e) => setExportWebhook(e.target.value)}
                           placeholder="https://hooks.zapier.com/hooks/catch/..."
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                          style={{ '--tw-ring-color': '#007B40' }}
+                          onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                          onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                         />
                       </div>
                     </div>
@@ -1571,10 +1823,10 @@ const SocialMediaCaptionGenerator = () => {
                         {userPlan === 'free' && <span className="inline-block text-white px-3 py-1 rounded-full text-sm mt-2" style={{ background: '#007B40' }}>Current Plan</span>}
                       </div>
                       <ul className="space-y-3 text-sm">
-                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 3 captions per day</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 10 captions per day</li>
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 3 platforms (Instagram, Facebook, TikTok)</li>
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Standard tones</li>
-                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Save up to 5 favourites</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Save up to 10 favourites</li>
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Recent captions list</li>
                       </ul>
                     </div>
@@ -1621,7 +1873,7 @@ const SocialMediaCaptionGenerator = () => {
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> No subscription required</li>
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Free platforms only</li>
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Standard tones</li>
-                        <li className="flex items-center gap-2"><Lock size={16} className="text-gray-400" /> Limited to 5 favorites</li>
+                        <li className="flex items-center gap-2"><Lock size={16} className="text-gray-400" /> Limited to 10 favorites</li>
                       </ul>
                       <button 
                         onClick={() => {setUserPlan('credits'); setCredits(prev => prev + 10);}}
