@@ -10,6 +10,7 @@
     "next": "14.0.0",
     "react": "^18",
     "react-dom": "^18",
-    "lucide-react": "^0.263.1"
+    "lucide-react": "^0.263.1",
+    "@supabase/supabase-js": "^2.39.0"
   }
 }
