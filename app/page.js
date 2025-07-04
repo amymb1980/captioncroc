@@ -40,7 +40,7 @@ const SocialMediaCaptionGenerator = () => {
   
   // Authentication State - Using Supabase
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const [authLoading, setAuthLoading] = useState(false);
