@@ -1,16 +1,23 @@
 {
-  "name": "captioncroc",
-  "version": "1.0.0",
+  "name": "your-app-name",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "next": "14.0.0",
     "react": "^18",
     "react-dom": "^18",
-    "lucide-react": "^0.263.1",
-    "@supabase/supabase-js": "^2.39.0"
+    "next": "14.2.16",
+    "@supabase/supabase-js": "^2.45.4",
+    "lucide-react": "^0.263.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.3.0",
+    "postcss": "^8.4.0",
+    "autoprefixer": "^10.4.0"
   }
 }
