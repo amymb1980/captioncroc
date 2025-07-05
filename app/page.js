@@ -1,5 +1,13 @@
 'use client'
 
+
+// Add error boundary logging
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (e) => {
+    console.log('React error details:', e.error);
+  });
+}
+
 import React, { useState, useEffect } from 'react';
 import { Copy, Sparkles, Instagram, Twitter, Facebook, Linkedin, AlertCircle, Save, Download, Trash2, ExternalLink, Calendar, BarChart3, Star, Heart, Crown, Lock, Zap, ShoppingBag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
