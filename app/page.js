@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState } from 'react';
-import { supabase } from '../lib/supabase';
 
 export default function Home() {
   const [message, setMessage] = useState('CaptionCroc Loading...');
+  const [supabase, setSupabase] = useState(null);
 
   // Test basic functionality first
   const testBasics = () => {
@@ -12,14 +12,35 @@ export default function Home() {
     console.log('React test successful');
   };
 
-  // Test Supabase import
-  const testSupabase = () => {
-    console.log('Supabase object:', supabase);
-    setMessage('Supabase imported successfully!');
+  // Test Supabase dynamic import
+  const testSupabase = async () => {
+    setMessage('Loading Supabase...');
+    try {
+      // Dynamic import to avoid server-side issues
+      const { createClient } = await import('@supabase/supabase-js');
+      
+      const supabaseClient = createClient(
+        "https://dvpxrybauvofgxurvtai.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2cHhyeWJhdXZvZmd4dXJ2dGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2NzY3NjQsImV4cCI6MjA1MjI1Mjc2NH0.E9x6KslOwWxXd8IBeWpWdR8QAE2uMdSW6LOxzmlet6E"
+      );
+      
+      setSupabase(supabaseClient);
+      console.log('Supabase loaded:', supabaseClient);
+      setMessage('Supabase loaded successfully!');
+      
+    } catch (err) {
+      console.log('Supabase load error:', err);
+      setMessage('Supabase failed to load: ' + err.message);
+    }
   };
 
   // Test simple Supabase query
   const testSupabaseQuery = async () => {
+    if (!supabase) {
+      setMessage('Load Supabase first!');
+      return;
+    }
+    
     setMessage('Testing Supabase query...');
     try {
       const { data, error } = await supabase.from('user_profiles').select('count');
@@ -64,21 +85,21 @@ export default function Home() {
             cursor: 'pointer'
           }}
         >
-          Test Supabase Import
+          Load Supabase
         </button>
 
         <button 
           onClick={testSupabaseQuery}
           style={{ 
             padding: '10px 20px', 
-            background: '#EA8953',
+            background: supabase ? '#EA8953' : '#ccc',
             color: 'white',
             border: 'none',
             borderRadius: '5px',
-            cursor: 'pointer'
+            cursor: supabase ? 'pointer' : 'not-allowed'
           }}
         >
-          Test Supabase Query
+          Test Query
         </button>
       </div>
 
@@ -86,7 +107,7 @@ export default function Home() {
         <h3>Debug Steps:</h3>
         <ol>
           <li>✅ Basic React component loads</li>
-          <li>🔄 Test Supabase import</li>
+          <li>🔄 Dynamic Supabase import</li>
           <li>🔄 Test Supabase query</li>
           <li>🔄 Add authentication (after)</li>
           <li>🔄 Add full features (final)</li>
