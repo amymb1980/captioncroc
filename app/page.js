@@ -44,30 +44,38 @@ const SocialMediaCaptionGenerator = () => {
   // Check user authentication status on component mount
   useEffect(() => {
     const checkUser = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUser(session.user);
-          setShowLandingPage(false);
-          await loadUserProfile(session.user.id);
-          await loadUserCaptions(session.user.id);
-        }
-      } catch (error) {
+      // Don't use try/catch for auth operations that might use Suspense
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
         console.error('Error checking user:', error);
-      } finally {
         setLoading(false);
+        return;
       }
+      
+      if (session?.user) {
+        setUser(session.user);
+        setShowLandingPage(false);
+        // Load user data without try/catch
+        loadUserProfile(session.user.id);
+        loadUserCaptions(session.user.id);
+      }
+      
+      setLoading(false);
     };
 
     checkUser();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Listen for auth changes - don't use async in the callback
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setUser(session.user);
         setShowLandingPage(false);
-        await loadUserProfile(session.user.id);
-        await loadUserCaptions(session.user.id);
+        // Handle async operations outside the callback
+        setTimeout(() => {
+          loadUserProfile(session.user.id);
+          loadUserCaptions(session.user.id);
+        }, 0);
       } else {
         setUser(null);
         setShowLandingPage(true);
@@ -80,73 +88,61 @@ const SocialMediaCaptionGenerator = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Load user profile data
+  // Load user profile data - Handle errors without try/catch
   const loadUserProfile = async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error('Error loading profile:', error);
-        return;
-      }
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      console.error('Error loading profile:', error);
+      return;
+    }
 
-      if (data) {
-        setUserPlan(data.plan || 'free');
-        setDailyUsage(data.daily_usage || 0);
-      } else {
-        // Create profile if it doesn't exist
-        await createUserProfile(userId);
-      }
-    } catch (error) {
-      console.error('Error loading user profile:', error);
+    if (data) {
+      setUserPlan(data.plan || 'free');
+      setDailyUsage(data.daily_usage || 0);
+    } else {
+      // Create profile if it doesn't exist
+      createUserProfile(userId);
     }
   };
 
-  // Create user profile
+  // Create user profile - Handle errors without try/catch
   const createUserProfile = async (userId) => {
-    try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .insert([
-          {
-            id: userId,
-            email: user?.email,
-            name: user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
-            plan: 'free',
-            daily_usage: 0
-          }
-        ]);
+    const { error } = await supabase
+      .from('user_profiles')
+      .insert([
+        {
+          id: userId,
+          email: user?.email,
+          name: user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
+          plan: 'free',
+          daily_usage: 0
+        }
+      ]);
 
-      if (error) {
-        console.error('Error creating profile:', error);
-      }
-    } catch (error) {
-      console.error('Error creating user profile:', error);
+    if (error) {
+      console.error('Error creating profile:', error);
     }
   };
 
-  // Load user captions
+  // Load user captions - Handle errors without try/catch
   const loadUserCaptions = async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('captions')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+    const { data, error } = await supabase
+      .from('captions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error loading captions:', error);
-        return;
-      }
-
-      setSavedCaptions(data || []);
-    } catch (error) {
+    if (error) {
       console.error('Error loading captions:', error);
+      return;
     }
+
+    setSavedCaptions(data || []);
   };
 
   // Subscription Configuration
@@ -309,41 +305,36 @@ const SocialMediaCaptionGenerator = () => {
     setGeneratedCaption(styledCaption);
   };
 
-  // Authentication Functions using Supabase
+  // Authentication Functions using Supabase - Remove try/catch blocks
   const handleEmailAuth = async (email, password, mode) => {
     setAuthLoading(true);
     
-    try {
-      if (mode === 'signup') {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              name: email.split('@')[0]
-            }
+    let result;
+    if (mode === 'signup') {
+      result = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: email.split('@')[0]
           }
-        });
-
-        if (error) throw error;
-
-        if (data.user && !data.session) {
-          alert('Check your email for the confirmation link!');
         }
-      } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+      });
+    } else {
+      result = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+    }
 
-        if (error) throw error;
+    if (result.error) {
+      console.error('Auth error:', result.error);
+      alert(result.error.message || 'Authentication failed. Please try again.');
+    } else {
+      if (mode === 'signup' && result.data.user && !result.data.session) {
+        alert('Check your email for the confirmation link!');
       }
-      
       setShowAuthModal(false);
-      
-    } catch (error) {
-      console.error('Auth error:', error);
-      alert(error.message || 'Authentication failed. Please try again.');
     }
     
     setAuthLoading(false);
@@ -352,17 +343,14 @@ const SocialMediaCaptionGenerator = () => {
   const handleOAuthLogin = async (provider) => {
     setAuthLoading(true);
     
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: provider.toLowerCase(),
-        options: {
-          redirectTo: window.location.origin
-        }
-      });
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: provider.toLowerCase(),
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
 
-      if (error) throw error;
-      
-    } catch (error) {
+    if (error) {
       console.error('OAuth error:', error);
       alert('OAuth login failed. Please try again.');
     }
@@ -371,9 +359,8 @@ const SocialMediaCaptionGenerator = () => {
   };
 
   const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
       console.error('Logout error:', error);
     }
   };
@@ -397,34 +384,34 @@ const SocialMediaCaptionGenerator = () => {
     setIsGenerating(true);
     setError('');
     
-    try {
-      // Generate 3 variations for better user experience
-      const variations = [
-        generateFallbackCaption('variation1'),
-        generateFallbackCaption('variation2'), 
-        generateFallbackCaption('variation3')
-      ];
+    // Generate 3 variations for better user experience
+    const variations = [
+      generateFallbackCaption('variation1'),
+      generateFallbackCaption('variation2'), 
+      generateFallbackCaption('variation3')
+    ];
+    
+    setCaptionVariations(variations);
+    setGeneratedCaption(variations[0]);
+    setSelectedVariation(0);
+    setShowVariations(true);
+    setOriginalCaption(variations[0]);
+    setShowStylingPanel(true);
+
+    // Update daily usage in database
+    if (userPlan === 'free') {
+      const newUsage = dailyUsage + 1;
+      setDailyUsage(newUsage);
+
+      // Update without try/catch
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ daily_usage: newUsage })
+        .eq('id', user.id);
       
-      setCaptionVariations(variations);
-      setGeneratedCaption(variations[0]);
-      setSelectedVariation(0);
-      setShowVariations(true);
-      setOriginalCaption(variations[0]);
-      setShowStylingPanel(true);
-
-      // Update daily usage in database
-      if (userPlan === 'free') {
-        const newUsage = dailyUsage + 1;
-        setDailyUsage(newUsage);
-
-        await supabase
-          .from('user_profiles')
-          .update({ daily_usage: newUsage })
-          .eq('id', user.id);
+      if (error) {
+        console.error('Error updating usage:', error);
       }
-      
-    } catch (err) {
-      setError('Failed to generate caption. Please try again.');
     }
     
     setIsGenerating(false);
@@ -525,32 +512,30 @@ const SocialMediaCaptionGenerator = () => {
       return;
     }
 
-    try {
-      const { data, error } = await supabase
-        .from('captions')
-        .insert([
-          {
-            user_id: user.id,
-            platform,
-            topic,
-            tone,
-            caption: generatedCaption,
-            is_favourite: false
-          }
-        ])
-        .select()
-        .single();
+    const { data, error } = await supabase
+      .from('captions')
+      .insert([
+        {
+          user_id: user.id,
+          platform,
+          topic,
+          tone,
+          caption: generatedCaption,
+          is_favourite: false
+        }
+      ])
+      .select()
+      .single();
 
-      if (error) throw error;
-
-      // Add to local state
-      setSavedCaptions(prev => [data, ...prev]);
-      alert('Caption saved successfully!');
-      
-    } catch (error) {
+    if (error) {
       console.error('Error saving caption:', error);
       alert('Failed to save caption. Please try again.');
+      return;
     }
+
+    // Add to local state
+    setSavedCaptions(prev => [data, ...prev]);
+    alert('Caption saved successfully!');
   };
 
   const toggleFavourite = async (id) => {
@@ -561,42 +546,40 @@ const SocialMediaCaptionGenerator = () => {
       return;
     }
 
-    try {
-      const newFavouriteStatus = !caption.is_favourite;
-      
-      const { error } = await supabase
-        .from('captions')
-        .update({ is_favourite: newFavouriteStatus })
-        .eq('id', id);
+    const newFavouriteStatus = !caption.is_favourite;
+    
+    const { error } = await supabase
+      .from('captions')
+      .update({ is_favourite: newFavouriteStatus })
+      .eq('id', id);
 
-      if (error) throw error;
-
-      setSavedCaptions(prev => 
-        prev.map(caption => 
-          caption.id === id 
-            ? { ...caption, is_favourite: newFavouriteStatus }
-            : caption
-        )
-      );
-    } catch (error) {
+    if (error) {
       console.error('Error updating favourite:', error);
+      return;
     }
+
+    setSavedCaptions(prev => 
+      prev.map(caption => 
+        caption.id === id 
+          ? { ...caption, is_favourite: newFavouriteStatus }
+          : caption
+      )
+    );
   };
 
   const deleteCaption = async (id) => {
-    try {
-      const { error } = await supabase
-        .from('captions')
-        .delete()
-        .eq('id', id);
+    const { error } = await supabase
+      .from('captions')
+      .delete()
+      .eq('id', id);
 
-      if (error) throw error;
-
-      setSavedCaptions(prev => prev.filter(caption => caption.id !== id));
-    } catch (error) {
+    if (error) {
       console.error('Error deleting caption:', error);
       alert('Failed to delete caption. Please try again.');
+      return;
     }
+
+    setSavedCaptions(prev => prev.filter(caption => caption.id !== id));
   };
 
   const copyToClipboard = async (text) => {
@@ -782,14 +765,9 @@ const SocialMediaCaptionGenerator = () => {
                   onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                   placeholder="your@email.com"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#007B40';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0, 123, 64, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#D1D5DB';
-                    e.target.style.boxShadow = '';
-                  }}
+                  style={{ '--tw-ring-color': '#007B40' }}
+                  onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                  onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                 />
               </div>
               
@@ -802,14 +780,9 @@ const SocialMediaCaptionGenerator = () => {
                   onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                   placeholder="••••••••"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#007B40';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0, 123, 64, 0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#D1D5DB';
-                    e.target.style.boxShadow = '';
-                  }}
+                  style={{ '--tw-ring-color': '#007B40' }}
+                  onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                  onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                 />
               </div>
               
@@ -823,14 +796,9 @@ const SocialMediaCaptionGenerator = () => {
                     onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
                     placeholder="••••••••"
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#007B40';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(0, 123, 64, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#D1D5DB';
-                      e.target.style.boxShadow = '';
-                    }}
+                    style={{ '--tw-ring-color': '#007B40' }}
+                    onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                    onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                   />
                 </div>
               )}
@@ -1376,14 +1344,9 @@ const SocialMediaCaptionGenerator = () => {
                           onChange={(e) => setTopic(e.target.value)}
                           placeholder="e.g., sustainable fashion, productivity tips, weekend vibes"
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                          onFocus={(e) => {
-                            e.target.style.borderColor = '#007B40';
-                            e.target.style.boxShadow = '0 0 0 3px rgba(0, 123, 64, 0.1)';
-                          }}
-                          onBlur={(e) => {
-                            e.target.style.borderColor = '#D1D5DB';
-                            e.target.style.boxShadow = '';
-                          }}
+                          style={{ '--tw-ring-color': '#007B40' }}
+                          onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                          onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                         />
                       </div>
 
@@ -1400,14 +1363,9 @@ const SocialMediaCaptionGenerator = () => {
                             setTone(selectedTone);
                           }}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                          onFocus={(e) => {
-                            e.target.style.borderColor = '#007B40';
-                            e.target.style.boxShadow = '0 0 0 3px rgba(0, 123, 64, 0.1)';
-                          }}
-                          onBlur={(e) => {
-                            e.target.style.borderColor = '#D1D5DB';
-                            e.target.style.boxShadow = '';
-                          }}
+                          style={{ '--tw-ring-color': '#007B40' }}
+                          onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                          onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                         >
                           {tones.map(t => (
                             <option 
@@ -1434,14 +1392,9 @@ const SocialMediaCaptionGenerator = () => {
                           onChange={(e) => setCallToAction(e.target.value)}
                           placeholder="e.g., Check out our website, Share your thoughts, Like if you agree"
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                          onFocus={(e) => {
-                            e.target.style.borderColor = '#007B40';
-                            e.target.style.boxShadow = '0 0 0 3px rgba(0, 123, 64, 0.1)';
-                          }}
-                          onBlur={(e) => {
-                            e.target.style.borderColor = '#D1D5DB';
-                            e.target.style.boxShadow = '';
-                          }}
+                          style={{ '--tw-ring-color': '#007B40' }}
+                          onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                          onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                         />
                       </div>
 
@@ -1826,14 +1779,9 @@ const SocialMediaCaptionGenerator = () => {
                           onChange={(e) => setExportWebhook(e.target.value)}
                           placeholder="https://hooks.zapier.com/hooks/catch/..."
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                          onFocus={(e) => {
-                            e.target.style.borderColor = '#007B40';
-                            e.target.style.boxShadow = '0 0 0 3px rgba(0, 123, 64, 0.1)';
-                          }}
-                          onBlur={(e) => {
-                            e.target.style.borderColor = '#D1D5DB';
-                            e.target.style.boxShadow = '';
-                          }}
+                          style={{ '--tw-ring-color': '#007B40' }}
+                          onFocus={(e) => e.target.style.borderColor = '#007B40'}
+                          onBlur={(e) => e.target.style.borderColor = '#D1D5DB'}
                         />
                       </div>
                     </div>
@@ -1858,8 +1806,6 @@ const SocialMediaCaptionGenerator = () => {
                         {userPlan === 'free' && <span className="inline-block text-white px-3 py-1 rounded-full text-sm mt-2" style={{ background: '#007B40' }}>Current Plan</span>}
                       </div>
                       <ul className="space-y-3 text-sm">
-                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 10 captions per day</li>
-                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 3 platforms (Instagram, Facebook, TikTok)</li>
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Standard tones</li>
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Save up to 10 favourites</li>
                         <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Recent captions list</li>
@@ -1870,4 +1816,69 @@ const SocialMediaCaptionGenerator = () => {
                     <div className={`border-2 rounded-lg p-6 relative ${userPlan === 'pro' ? 'bg-opacity-10' : 'border-2'}`}
                          style={userPlan === 'pro' ? { borderColor: '#007B40', backgroundColor: '#007B4010' } : { borderColor: '#007B40' }}>
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <span className="text-white px-3 py-1 rounded-full text-sm" style={{ background: '#007B40' }}>Popular
+                        <span className="text-white px-3 py-1 rounded-full text-sm" style={{ background: '#007B40' }}>Popular</span>
+                      </div>
+                      <div className="text-center mb-6">
+                        <h3 className="text-xl font-bold text-gray-800">Pro Plan</h3>
+                        <div className="text-3xl font-bold text-teal-600 mt-2">$9.99<span className="text-lg text-gray-500">/month</span></div>
+                        {userPlan === 'pro' && <span className="inline-block text-white px-3 py-1 rounded-full text-sm mt-2" style={{ background: '#007B40' }}>Current Plan</span>}
+                      </div>
+                      <ul className="space-y-3 text-sm">
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Unlimited caption generation</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 8 caption styling options</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> All 6 platforms (including LinkedIn, Etsy)</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Premium tones (Edgy, Witty, Viral)</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Unlimited favorites</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Priority support</li>
+                      </ul>
+                      {userPlan !== 'pro' && (
+                        <button 
+                          onClick={() => setUserPlan('pro')}
+                          className="w-full mt-6 text-white py-2 px-4 rounded-lg hover:opacity-90 transition-colors"
+                          style={{ background: '#007B40' }}
+                        >
+                          Upgrade to Pro
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Credit Pack */}
+                    <div className={`border-2 rounded-lg p-6 ${userPlan === 'credits' ? 'border-orange-500 bg-orange-50' : 'border-gray-200'}`}>
+                      <div className="text-center mb-6">
+                        <h3 className="text-xl font-bold text-gray-800">Credit Pack</h3>
+                        <div className="text-3xl font-bold text-orange-600 mt-2">$4.99<span className="text-lg text-gray-500"> one-time</span></div>
+                        {userPlan === 'credits' && <span className="inline-block bg-orange-500 text-white px-3 py-1 rounded-full text-sm mt-2">Current Plan</span>}
+                      </div>
+                      <ul className="space-y-3 text-sm">
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 10 caption credits</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> No subscription required</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Free platforms only</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Standard tones</li>
+                        <li className="flex items-center gap-2"><Lock size={16} className="text-gray-400" /> Limited to 10 favorites</li>
+                      </ul>
+                      <button 
+                        onClick={() => {setUserPlan('credits'); setCredits(prev => prev + 10);}}
+                        className="w-full mt-6 bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors"
+                      >
+                        {userPlan === 'credits' ? 'Buy More Credits' : 'Buy Credits'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <UpgradeModal />
+      <AuthModal />
+    </>
+  );
+};
+
+export default function Home() {
+  return <SocialMediaCaptionGenerator />
+}500" /> 10 captions per day</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 3 platforms (Instagram, Facebook, TikTok)</li>
+                        <li className="flex items-center gap-2"><Zap size={16} className="text-green-
