@@ -547,7 +547,7 @@ Who else is excited about this? Drop your thoughts below! 👇
                 </div>
               </div>
             </div>
-            <p className="text-gray-600 text-lg">Snappy captions that bite (DEV)!</p>
+            <p className="text-gray-600 text-lg">Snappy captions that bite!</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 mb-6">
@@ -965,7 +965,7 @@ Who else is excited about this? Drop your thoughts below! 👇
                     <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 8 caption styling options</li>
                     <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> All 6 platforms (including LinkedIn, Etsy)</li>
                     <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Premium tones (Edgy, Witty, Viral)</li>
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Unlimited favorites</li>
+                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Unlimited favourites</li>
                   </ul>
                   {userPlan !== 'pro' && (
                     <button 
