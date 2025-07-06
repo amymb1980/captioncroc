@@ -547,7 +547,7 @@ Who else is excited about this? Drop your thoughts below! 👇
                 </div>
               </div>
             </div>
-            <p className="text-gray-600 text-lg">Snappy captions that bite!</p>
+            <p className="text-gray-600 text-lg">Snappy captions that bite (DEV)!</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4 mb-6">
