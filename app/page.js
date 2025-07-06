@@ -136,6 +136,22 @@ export default function Home() {
     setAuthLoading(false);
   };
 
+  const handleOAuthLogin = async (provider) => {
+    setAuthLoading(true);
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: provider.toLowerCase(),
+      options: { redirectTo: window.location.origin }
+    });
+
+    if (error) {
+      console.error('OAuth error:', error);
+      alert('OAuth login failed. Please try again.');
+    }
+    
+    setAuthLoading(false);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
@@ -271,50 +287,106 @@ Who else is excited about this? Drop your thoughts below! 👇
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-md w-full p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800">
-              {authMode === 'login' ? 'Welcome back to ' : 'Join '}
-              <span style={{ color: '#EA8953' }}>Caption</span>
-              <span style={{ color: '#007B40' }}>Croc</span>
-            </h2>
-            <button onClick={() => setShowAuthModal(false)} className="text-gray-400 text-xl">×</button>
-          </div>
-          
-          <div className="space-y-4">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full p-3 border border-gray-300 rounded-lg"
-            />
-            
-            <button
-              onClick={() => handleAuth(email, password, authMode)}
-              disabled={authLoading}
-              className="w-full text-white py-3 px-4 rounded-lg font-medium"
-              style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)' }}
-            >
-              {authLoading ? 'Processing...' : authMode === 'login' ? 'Sign In' : 'Create Account'}
-            </button>
-          </div>
+        <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <img src="/logo.png" alt="CaptionCroc Logo" className="w-8 h-8 opacity-80" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">
+                  {authMode === 'login' ? 'Welcome back to ' : 'Join '}
+                  <span style={{ color: '#EA8953' }}>Caption</span>
+                  <span style={{ color: '#007B40' }}>Croc</span>
+                </h2>
+              </div>
+              <button onClick={() => setShowAuthModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+            </div>
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
-              className="text-sm font-medium hover:opacity-80"
-              style={{ color: '#007B40' }}
-            >
-              {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-            </button>
+            {/* OAuth Buttons */}
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => handleOAuthLogin('Google')}
+                disabled={authLoading}
+                className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">G</span>
+                </div>
+                <span className="font-medium text-gray-700">Continue with Google</span>
+              </button>
+              
+              <button
+                onClick={() => handleOAuthLogin('GitHub')}
+                disabled={authLoading}
+                className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                <div className="w-5 h-5 bg-gray-800 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">G</span>
+                </div>
+                <span className="font-medium text-gray-700">Continue with GitHub</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex-1 h-px bg-gray-200"></div>
+              <span className="text-sm text-gray-500">or</span>
+              <div className="flex-1 h-px bg-gray-200"></div>
+            </div>
+
+            {/* Email/Password Form */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAuth(email, password, authMode)}
+                  placeholder="your@email.com"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': '#007B40' }}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAuth(email, password, authMode)}
+                  placeholder="••••••••"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': '#007B40' }}
+                />
+              </div>
+              
+              <button
+                onClick={() => handleAuth(email, password, authMode)}
+                disabled={authLoading}
+                className="w-full text-white py-3 px-4 rounded-lg font-medium disabled:opacity-50 transition-all"
+                style={{ background: authLoading ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
+              >
+                {authLoading ? 'Processing...' : authMode === 'login' ? 'Sign In' : 'Create Account'}
+              </button>
+            </div>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setAuthMode(authMode === 'login' ? 'signup' : 'login')}
+                className="text-sm font-medium hover:opacity-80 transition-colors"
+                style={{ color: '#007B40' }}
+              >
+                {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              </button>
+            </div>
+
+            {authMode === 'signup' && (
+              <p className="text-xs text-gray-500 text-center mt-4">
+                By creating an account, you agree to our Terms of Service and Privacy Policy.
+              </p>
+            )}
           </div>
         </div>
       </div>
