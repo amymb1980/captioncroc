@@ -317,14 +317,14 @@ Who else is excited about this? Drop your thoughts below! 👇
               </button>
               
               <button
-                onClick={() => handleOAuthLogin('GitHub')}
+                onClick={() => handleOAuthLogin('Facebook')}
                 disabled={authLoading}
                 className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
-                <div className="w-5 h-5 bg-gray-800 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">G</span>
+                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">f</span>
                 </div>
-                <span className="font-medium text-gray-700">Continue with GitHub</span>
+                <span className="font-medium text-gray-700">Continue with Facebook</span>
               </button>
             </div>
 
