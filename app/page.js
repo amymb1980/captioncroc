@@ -4,6 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { Copy, Sparkles, Instagram, Twitter, Facebook, Linkedin, AlertCircle, Save, Calendar, BarChart3, Star, Crown, Lock, Zap, Heart, ShoppingBag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
+// Debug environment variables
+console.log('Debug - Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+console.log('Debug - Supabase Key length:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length);
+console.log('Debug - Supabase Key preview:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...');
+
 export default function Home() {
   const [platform, setPlatform] = useState('Instagram');
   const [topic, setTopic] = useState('');
