@@ -597,6 +597,18 @@ export default function Home() {
                   <div className="text-sm font-medium text-gray-800">
                     {user.email?.split('@')[0]}
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Call to Action (Optional)</label>
+                    <input
+                      type="text"
+                      value={callToAction}
+                      onChange={(e) => setCallToAction(e.target.value)}
+                      placeholder="e.g., Check out our website, Share your thoughts, Like if you agree"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                      style={{ '--tw-ring-color': '#007B40' }}
+                    />
+                  </div>
+
                   <div className="flex items-center gap-3">
                     <input
                       type="checkbox"
