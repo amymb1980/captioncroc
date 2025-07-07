@@ -173,19 +173,75 @@ export default function Home() {
     }
 
     setIsGenerating(true);
+    setError('');
     
-    const caption = `G'day! Just had to share my thoughts on ${topic}! This ${tone} approach is absolutely bonkers (in the best way). 🐊
+    try {
+      // Call our OpenAI API route
+      const response = await fetch('/api/generate-caption', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic,
+          tone,
+          platform,
+          includeHashtags
+        }),
+      });
 
-Who else is excited about this? Drop your thoughts below! 👇
+      const data = await response.json();
 
-#${topic.toLowerCase().replace(/\s+/g, '')} #${tone} #socialmedia #snappycaptions`;
-    
-    setGeneratedCaption(caption);
-    setOriginalCaption(caption);
-    setShowStylingPanel(true);
-    
-    if (userPlan === 'free') {
-      setDailyUsage(prev => prev + 1);
+      if (data.success && data.variations) {
+        // Use real AI-generated variations
+        setCaptionVariations(data.variations);
+        setGeneratedCaption(data.variations[0]);
+        setSelectedVariation(0);
+        setShowVariations(true);
+        setOriginalCaption(data.variations[0]);
+        setShowStylingPanel(true);
+      } else {
+        // Fall back to our fallback captions if AI fails
+        const fallbackVariations = data.fallback || [
+          generateFallbackCaption('variation1'),
+          generateFallbackCaption('variation2'), 
+          generateFallbackCaption('variation3')
+        ];
+        
+        setCaptionVariations(fallbackVariations);
+        setGeneratedCaption(fallbackVariations[0]);
+        setSelectedVariation(0);
+        setShowVariations(true);
+        setOriginalCaption(fallbackVariations[0]);
+        setShowStylingPanel(true);
+        
+        // Show user that we used fallback
+        alert('Used backup caption generator - AI service temporarily unavailable');
+      }
+
+      // Update daily usage
+      if (userPlan === 'free') {
+        setDailyUsage(prev => prev + 1);
+      }
+      
+    } catch (error) {
+      console.error('Caption generation error:', error);
+      
+      // Use fallback captions if everything fails
+      const fallbackVariations = [
+        generateFallbackCaption('variation1'),
+        generateFallbackCaption('variation2'), 
+        generateFallbackCaption('variation3')
+      ];
+      
+      setCaptionVariations(fallbackVariations);
+      setGeneratedCaption(fallbackVariations[0]);
+      setSelectedVariation(0);
+      setShowVariations(true);
+      setOriginalCaption(fallbackVariations[0]);
+      setShowStylingPanel(true);
+      
+      alert('Using backup caption generator - please check your connection');
     }
     
     setIsGenerating(false);
@@ -541,6 +597,19 @@ Who else is excited about this? Drop your thoughts below! 👇
                   <div className="text-sm font-medium text-gray-800">
                     {user.email?.split('@')[0]}
                   </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="hashtags"
+                      checked={includeHashtags}
+                      onChange={(e) => setIncludeHashtags(e.target.checked)}
+                      className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                    />
+                    <label htmlFor="hashtags" className="text-sm font-medium text-gray-700">
+                      Include hashtags (3-5 relevant tags)
+                    </label>
+                  </div>
+
                   <button onClick={handleLogout} className="text-xs text-gray-500 hover:text-gray-700">
                     Sign out
                   </button>
@@ -631,12 +700,14 @@ Who else is excited about this? Drop your thoughts below! 👇
         <div className="p-8">
           {activeTab === 'generator' && (
             <div>
-              <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-6">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="text-teal-600 mt-0.5" size={20} />
+                  <AlertCircle className="text-green-600 mt-0.5" size={20} />
                   <div>
-                    <h3 className="font-medium text-teal-800 mb-1">Supabase Connected! 🎉</h3>
-                    <p className="text-sm text-teal-700">Your captions are safely stored with pro features available!</p>
+                    <h3 className="font-medium text-green-800 mb-1">🤖 Real AI Integration Active! 🎉</h3>
+                    <p className="text-sm text-green-700">
+                      Now powered by OpenAI GPT for authentic, engaging captions with Australian flair!
+                    </p>
                   </div>
                 </div>
               </div>
@@ -806,6 +877,50 @@ Who else is excited about this? Drop your thoughts below! 👇
                         <Sparkles size={16} className={showStylingPanel ? 'text-teal-600' : 'text-gray-600'} />
                         Style
                       </button>
+                    </div>
+                  )}
+
+                  {/* Caption Variations Selector */}
+                  {showVariations && captionVariations.length > 0 && (
+                    <div className="border border-gray-200 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Zap className="text-teal-600" size={16} />
+                        <h4 className="font-medium text-gray-800">AI Generated Variations</h4>
+                        <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
+                          Powered by OpenAI
+                        </span>
+                      </div>
+                      <div className="grid gap-3">
+                        {captionVariations.map((variation, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setSelectedVariation(index);
+                              setGeneratedCaption(variation);
+                              setOriginalCaption(variation);
+                            }}
+                            className={`p-3 text-left rounded-lg border-2 transition-all ${
+                              selectedVariation === index
+                                ? 'border-teal-500 bg-teal-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-gray-800">
+                                Variation {index + 1}
+                                {selectedVariation === index && <span className="ml-2 text-teal-600">✓ Selected</span>}
+                              </span>
+                              <span className="text-xs text-gray-500">{variation.length} chars</span>
+                            </div>
+                            <div className="text-sm text-gray-600 line-clamp-3">
+                              {variation.length > 120 ? variation.substring(0, 120) + '...' : variation}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">
+                        🤖 Choose your favourite AI-generated variation, then style it further below!
+                      </p>
                     </div>
                   )}
 
