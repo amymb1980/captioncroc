@@ -5,16 +5,21 @@ import { Copy, Sparkles, Instagram, Twitter, Facebook, Linkedin, AlertCircle, Sa
 import { supabase } from '../lib/supabase';
 
 export default function Home() {
+  // Basic state
   const [platform, setPlatform] = useState('Instagram');
   const [topic, setTopic] = useState('');
   const [tone, setTone] = useState('casual');
+  const [includeHashtags, setIncludeHashtags] = useState(true);
   const [generatedCaption, setGeneratedCaption] = useState('');
+  const [captionVariations, setCaptionVariations] = useState([]);
+  const [selectedVariation, setSelectedVariation] = useState(0);
   const [originalCaption, setOriginalCaption] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [savedCaptions, setSavedCaptions] = useState([]);
   const [activeTab, setActiveTab] = useState('generator');
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [showStylingPanel, setShowStylingPanel] = useState(false);
+  const [showVariations, setShowVariations] = useState(false);
   
   // Pro Plan State
   const [userPlan, setUserPlan] = useState('free');
@@ -173,7 +178,6 @@ export default function Home() {
     }
 
     setIsGenerating(true);
-    setError('');
     
     try {
       // Call our OpenAI API route
@@ -201,11 +205,11 @@ export default function Home() {
         setOriginalCaption(data.variations[0]);
         setShowStylingPanel(true);
       } else {
-        // Fall back to our fallback captions if AI fails
-        const fallbackVariations = data.fallback || [
-          generateFallbackCaption('variation1'),
-          generateFallbackCaption('variation2'), 
-          generateFallbackCaption('variation3')
+        // Fall back to simple captions if AI fails
+        const fallbackVariations = [
+          generateSimpleCaption(),
+          generateSimpleCaption(),
+          generateSimpleCaption()
         ];
         
         setCaptionVariations(fallbackVariations);
@@ -215,7 +219,6 @@ export default function Home() {
         setOriginalCaption(fallbackVariations[0]);
         setShowStylingPanel(true);
         
-        // Show user that we used fallback
         alert('Used backup caption generator - AI service temporarily unavailable');
       }
 
@@ -227,11 +230,11 @@ export default function Home() {
     } catch (error) {
       console.error('Caption generation error:', error);
       
-      // Use fallback captions if everything fails
+      // Use simple fallback captions if everything fails
       const fallbackVariations = [
-        generateFallbackCaption('variation1'),
-        generateFallbackCaption('variation2'), 
-        generateFallbackCaption('variation3')
+        generateSimpleCaption(),
+        generateSimpleCaption(),
+        generateSimpleCaption()
       ];
       
       setCaptionVariations(fallbackVariations);
@@ -245,6 +248,20 @@ export default function Home() {
     }
     
     setIsGenerating(false);
+  };
+
+  const generateSimpleCaption = () => {
+    const intros = [
+      `G'day! Just discovered something amazing about ${topic}! This ${tone} approach is absolutely brilliant. 🐊`,
+      `Crikey! Been exploring ${topic} lately and I'm totally hooked! This ${tone} perspective really hits different. 🔥`,
+      `Fair dinkum, ${topic} has been on my radar and I can't get enough! This ${tone} angle is pure gold. ✨`
+    ];
+    
+    const randomIntro = intros[Math.floor(Math.random() * intros.length)];
+    const cta = '\n\nWhat do you reckon? Drop your thoughts below! 👇';
+    const hashtags = includeHashtags ? `\n\n#${topic.toLowerCase().replace(/\s+/g, '')} #${tone} #socialmedia` : '';
+    
+    return randomIntro + cta + hashtags;
   };
 
   const applyCaptionStyle = (styleType) => {
@@ -359,7 +376,6 @@ export default function Home() {
               <button onClick={() => setShowAuthModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
             </div>
 
-            {/* OAuth Buttons */}
             <div className="space-y-3 mb-6">
               <button
                 onClick={() => handleOAuthLogin('Google')}
@@ -390,7 +406,6 @@ export default function Home() {
               <div className="flex-1 h-px bg-gray-200"></div>
             </div>
 
-            {/* Email/Password Form */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -437,12 +452,6 @@ export default function Home() {
                 {authMode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
               </button>
             </div>
-
-            {authMode === 'signup' && (
-              <p className="text-xs text-gray-500 text-center mt-4">
-                By creating an account, you agree to our Terms of Service and Privacy Policy.
-              </p>
-            )}
           </div>
         </div>
       </div>
@@ -455,7 +464,7 @@ export default function Home() {
         <div className="bg-white rounded-xl max-w-lg w-full p-6">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Ready to Upgrade?</h2>
-            <p className="text-gray-600">Unlock unlimited snappy captions and styling magic!</p>
+            <p className="text-gray-600">Unlock unlimited snappy captions!</p>
           </div>
 
           <div className="border-2 border-teal-500 rounded-lg p-6 mb-6">
@@ -465,10 +474,8 @@ export default function Home() {
             </div>
             <ul className="space-y-2 text-sm mb-6">
               <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>Unlimited captions</strong></li>
-              <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>8 styling options</strong></li>
-              <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>All 6 platforms</strong></li>
+              <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>All platforms</strong></li>
               <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>Premium tones</strong></li>
-              <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>Unlimited favourites</strong></li>
             </ul>
             <button 
               onClick={() => {setUserPlan('pro'); setShowUpgradeModal(false);}}
@@ -480,7 +487,7 @@ export default function Home() {
 
           <div className="text-center">
             <button onClick={() => setShowUpgradeModal(false)} className="text-gray-500 text-sm">
-              Maybe later - continue with free plan
+              Maybe later
             </button>
           </div>
         </div>
@@ -597,31 +604,6 @@ export default function Home() {
                   <div className="text-sm font-medium text-gray-800">
                     {user.email?.split('@')[0]}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Call to Action (Optional)</label>
-                    <input
-                      type="text"
-                      value={callToAction}
-                      onChange={(e) => setCallToAction(e.target.value)}
-                      placeholder="e.g., Check out our website, Share your thoughts, Like if you agree"
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
-                      style={{ '--tw-ring-color': '#007B40' }}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="hashtags"
-                      checked={includeHashtags}
-                      onChange={(e) => setIncludeHashtags(e.target.checked)}
-                      className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
-                    />
-                    <label htmlFor="hashtags" className="text-sm font-medium text-gray-700">
-                      Include hashtags (3-5 relevant tags)
-                    </label>
-                  </div>
-
                   <button onClick={handleLogout} className="text-xs text-gray-500 hover:text-gray-700">
                     Sign out
                   </button>
@@ -649,17 +631,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              {userPlan !== 'pro' && (
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                  <div 
-                    className="h-2 rounded-full transition-all"
-                    style={{ 
-                      width: `${(dailyUsage / 10) * 100}%`,
-                      background: 'linear-gradient(135deg, #EA8953, #007B40)'
-                    }}
-                  ></div>
-                </div>
-              )}
             </div>
 
             <div className="bg-orange-50 rounded-lg p-4">
@@ -696,15 +667,6 @@ export default function Home() {
               }`}
             >
               Saved Captions ({savedCaptions.length})
-              {favouriteCount > 0 && <span className="ml-1 text-orange-500">★{favouriteCount}</span>}
-            </button>
-            <button
-              onClick={() => setActiveTab('pricing')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                activeTab === 'pricing' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {userPlan === 'free' ? 'Upgrade' : 'Pricing'}
             </button>
           </div>
         </div>
@@ -716,9 +678,9 @@ export default function Home() {
                 <div className="flex items-start gap-3">
                   <AlertCircle className="text-green-600 mt-0.5" size={20} />
                   <div>
-                    <h3 className="font-medium text-green-800 mb-1">🤖 Real AI Integration Active! 🎉</h3>
+                    <h3 className="font-medium text-green-800 mb-1">🤖 OpenAI Integration Ready! 🎉</h3>
                     <p className="text-sm text-green-700">
-                      Now powered by OpenAI GPT for authentic, engaging captions with Australian flair!
+                      Your app will try to use real AI, with smart fallbacks if needed!
                     </p>
                   </div>
                 </div>
@@ -758,10 +720,6 @@ export default function Home() {
                         );
                       })}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Character limit: {currentPlatform?.limit} characters
-                      {userPlan === 'free' && ' • Pro plan unlocks all platforms'}
-                    </p>
                   </div>
 
                   <div>
@@ -797,11 +755,19 @@ export default function Home() {
                         </option>
                       ))}
                     </select>
-                    {userPlan !== 'pro' && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        🔒 Premium tones (Edgy, Witty, Viral-Optimised) available in Pro plan
-                      </p>
-                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="hashtags"
+                      checked={includeHashtags}
+                      onChange={(e) => setIncludeHashtags(e.target.checked)}
+                      className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                    />
+                    <label htmlFor="hashtags" className="text-sm font-medium text-gray-700">
+                      Include hashtags (3-5 relevant tags)
+                    </label>
                   </div>
 
                   <button
@@ -827,34 +793,10 @@ export default function Home() {
                       </>
                     )}
                   </button>
-
-                  {!canGenerateCaption() && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                      <p className="text-amber-700 text-sm">
-                        You've used {dailyUsage}/10 captions today. Upgrade to Pro Croc for unlimited access!
-                      </p>
-                      <button 
-                        onClick={() => setShowUpgradeModal(true)}
-                        className="mt-2 text-sm bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700"
-                      >
-                        Upgrade to Pro Croc
-                      </button>
-                    </div>
-                  )}
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-800">Generated Caption</h3>
-                    {generatedCaption && (
-                      <div className="flex items-center gap-2">
-                        <currentPlatform.icon size={16} className="text-gray-600" />
-                        <span className="text-sm text-gray-600">
-                          {generatedCaption.length}/{currentPlatform?.limit}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800">Generated Caption</h3>
                   
                   <textarea
                     value={generatedCaption}
@@ -868,7 +810,6 @@ export default function Home() {
                       <button
                         onClick={() => copyToClipboard(generatedCaption)}
                         className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                        title="Copy to clipboard"
                       >
                         <Copy size={16} className="text-gray-600" />
                         Copy
@@ -876,129 +817,10 @@ export default function Home() {
                       <button
                         onClick={saveCaption}
                         className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                        title="Save caption"
                       >
                         <Save size={16} className="text-gray-600" />
                         Save
                       </button>
-                      <button
-                        onClick={() => setShowStylingPanel(!showStylingPanel)}
-                        className={`flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm ${showStylingPanel ? 'bg-teal-50 border-teal-300' : ''}`}
-                        title="Style caption"
-                      >
-                        <Sparkles size={16} className={showStylingPanel ? 'text-teal-600' : 'text-gray-600'} />
-                        Style
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Caption Variations Selector */}
-                  {showVariations && captionVariations.length > 0 && (
-                    <div className="border border-gray-200 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Zap className="text-teal-600" size={16} />
-                        <h4 className="font-medium text-gray-800">AI Generated Variations</h4>
-                        <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
-                          Powered by OpenAI
-                        </span>
-                      </div>
-                      <div className="grid gap-3">
-                        {captionVariations.map((variation, index) => (
-                          <button
-                            key={index}
-                            onClick={() => {
-                              setSelectedVariation(index);
-                              setGeneratedCaption(variation);
-                              setOriginalCaption(variation);
-                            }}
-                            className={`p-3 text-left rounded-lg border-2 transition-all ${
-                              selectedVariation === index
-                                ? 'border-teal-500 bg-teal-50'
-                                : 'border-gray-200 hover:border-gray-300'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm font-medium text-gray-800">
-                                Variation {index + 1}
-                                {selectedVariation === index && <span className="ml-2 text-teal-600">✓ Selected</span>}
-                              </span>
-                              <span className="text-xs text-gray-500">{variation.length} chars</span>
-                            </div>
-                            <div className="text-sm text-gray-600 line-clamp-3">
-                              {variation.length > 120 ? variation.substring(0, 120) + '...' : variation}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2">
-                        🤖 Choose your favourite AI-generated variation, then style it further below!
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Caption Styling Panel */}
-                  {showStylingPanel && generatedCaption && (
-                    <div className="border-t border-gray-200 pt-6 mt-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                          <div className="w-6 h-6 bg-gradient-to-r from-teal-500 to-orange-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">✨</span>
-                          </div>
-                          Style Your Caption
-                          {userPlan !== 'pro' && (
-                            <span className="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full font-medium">Pro Feature</span>
-                          )}
-                        </h4>
-                        <button
-                          onClick={() => setGeneratedCaption(originalCaption)}
-                          className="text-sm text-gray-500 hover:text-gray-700"
-                        >
-                          Reset to Original
-                        </button>
-                      </div>
-                      
-                      {userPlan !== 'pro' && (
-                        <div className="bg-gradient-to-r from-teal-50 to-orange-50 border border-teal-200 rounded-lg p-4 mb-4">
-                          <div className="flex items-center gap-3">
-                            <Crown className="text-teal-600" size={20} />
-                            <div>
-                              <h5 className="font-medium text-teal-800">Unlock 8 Caption Styles</h5>
-                              <p className="text-sm text-teal-700">Transform your captions for Instagram, LinkedIn, TikTok and more with Pro styling options.</p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => setShowUpgradeModal(true)}
-                            className="mt-3 bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700"
-                          >
-                            Upgrade to Pro - $9/month
-                          </button>
-                        </div>
-                      )}
-                      
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {['minimalist', 'emoji-heavy', 'professional', 'listicle'].map((style) => (
-                          <button
-                            key={style}
-                            onClick={() => userPlan === 'pro' ? applyCaptionStyle(style) : setShowUpgradeModal(true)}
-                            className={`p-3 border rounded-lg text-left transition-all ${
-                              userPlan === 'pro' 
-                                ? 'border-gray-200 hover:border-teal-300 hover:bg-teal-50' 
-                                : 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-75'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-1">
-                              <div className="font-medium text-sm text-gray-800 capitalize">{style.replace('-', ' ')}</div>
-                              {userPlan !== 'pro' && <Lock size={12} className="text-gray-400" />}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {style === 'minimalist' && 'Clean & simple'}
-                              {style === 'emoji-heavy' && 'Fun & expressive ✨'}
-                              {style === 'professional' && 'LinkedIn ready'}
-                              {style === 'listicle' && 'Numbered points'}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
@@ -1012,7 +834,6 @@ export default function Home() {
                 <div className="text-center py-12">
                   <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-600 text-lg">No captions saved yet</p>
-                  <p className="text-gray-500">Generate and save captions to see them here</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1024,8 +845,6 @@ export default function Home() {
                           <span className="text-sm font-medium text-gray-700">{caption.platform}</span>
                           <span className="text-xs text-gray-500">•</span>
                           <span className="text-xs text-gray-500">{caption.tone}</span>
-                          <span className="text-xs text-gray-500">•</span>
-                          <span className="text-xs text-gray-500">{new Date(caption.created_at).toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
@@ -1044,67 +863,10 @@ export default function Home() {
                       </div>
                       <h3 className="font-medium text-gray-800 mb-2">{caption.topic}</h3>
                       <p className="text-sm text-gray-600 whitespace-pre-wrap">{caption.caption}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs text-gray-500">{caption.caption.length} characters</span>
-                      </div>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
-          )}
-
-          {activeTab === 'pricing' && (
-            <div>
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">Choose Your Plan</h2>
-                <p className="text-gray-600">Unlock more features and remove limits</p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className={`border-2 rounded-lg p-6 ${userPlan === 'free' ? 'bg-opacity-10' : 'border-gray-200'}`}
-                     style={userPlan === 'free' ? { borderColor: '#007B40', backgroundColor: '#007B4010' } : {}}>
-                  <div className="text-center mb-6">
-                    <h3 className="text-xl font-bold text-gray-800">Free Plan</h3>
-                    <div className="text-3xl font-bold text-green-600 mt-2">$0<span className="text-lg text-gray-500">/month</span></div>
-                    {userPlan === 'free' && <span className="inline-block text-white px-3 py-1 rounded-full text-sm mt-2" style={{ background: '#007B40' }}>Current Plan</span>}
-                  </div>
-                  <ul className="space-y-3 text-sm">
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 10 captions per day</li>
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 3 platforms (Instagram, Facebook, TikTok)</li>
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Standard tones</li>
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Save up to 10 favourites</li>
-                  </ul>
-                </div>
-
-                <div className={`border-2 rounded-lg p-6 relative ${userPlan === 'pro' ? 'bg-opacity-10' : 'border-2'}`}
-                     style={userPlan === 'pro' ? { borderColor: '#007B40', backgroundColor: '#007B4010' } : { borderColor: '#007B40' }}>
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="text-white px-3 py-1 rounded-full text-sm" style={{ background: '#007B40' }}>Popular</span>
-                  </div>
-                  <div className="text-center mb-6">
-                    <h3 className="text-xl font-bold text-gray-800">Pro Plan</h3>
-                    <div className="text-3xl font-bold text-teal-600 mt-2">$9<span className="text-lg text-gray-500">/month</span></div>
-                    {userPlan === 'pro' && <span className="inline-block text-white px-3 py-1 rounded-full text-sm mt-2" style={{ background: '#007B40' }}>Current Plan</span>}
-                  </div>
-                  <ul className="space-y-3 text-sm">
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Unlimited caption generation</li>
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 8 caption styling options</li>
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> All 6 platforms (including LinkedIn, Etsy)</li>
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Premium tones (Edgy, Witty, Viral)</li>
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Unlimited favourites</li>
-                  </ul>
-                  {userPlan !== 'pro' && (
-                    <button 
-                      onClick={() => setUserPlan('pro')}
-                      className="w-full mt-6 text-white py-2 px-4 rounded-lg hover:opacity-90"
-                      style={{ background: '#007B40' }}
-                    >
-                      Upgrade to Pro
-                    </button>
-                  )}
-                </div>
-              </div>
             </div>
           )}
         </div>
