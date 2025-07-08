@@ -195,7 +195,8 @@ export default function Home() {
       });
 
       const data = await response.json();
-
+      console.log('API Response:', data); // ADD THIS DEBUG LINE
+      
       if (data.success && data.variations) {
         // Use real AI-generated variations
         setCaptionVariations(data.variations);
