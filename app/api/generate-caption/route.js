@@ -6,8 +6,11 @@ const openai = new OpenAI({
 });
 
 export async function POST(request) {
+  console.log('POST route called');
+  
   try {
     const { topic, tone, platform, includeHashtags } = await request.json();
+    console.log('Request data:', { topic, tone, platform, includeHashtags });
 
     // Validate required fields
     if (!topic || !tone || !platform) {
@@ -19,8 +22,11 @@ export async function POST(request) {
 
     // Check if OpenAI API key exists
     if (!process.env.OPENAI_API_KEY) {
+      console.log('API key missing!');
       throw new Error('OpenAI API key not configured');
     }
+    
+    console.log('API key exists, calling OpenAI...');
 
     // Create the prompt for OpenAI
     const prompt = `Generate 3 different social media captions for ${platform} about "${topic}" with a ${tone} tone. 
@@ -53,6 +59,7 @@ Return exactly 3 variations, each separated by "---VARIATION---"`;
       temperature: 0.8,
     });
 
+    console.log('OpenAI response received');
     const content = completion.choices[0]?.message?.content;
     
     if (!content) {
