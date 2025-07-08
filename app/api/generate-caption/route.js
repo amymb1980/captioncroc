@@ -13,7 +13,13 @@ export async function POST(request) {
     }
 
     // For now, let's just test if the route works without OpenAI
-    const testCaption = `G'day! Just had to share my thoughts on ${topic}! This ${tone} approach is absolutely brilliant for ${platform}. 🐊
+   const variations = [
+  `G'day! Just had to share my thoughts on ${topic}! This ${tone} approach is absolutely brilliant for ${platform}. 🐊\n\nWhat do you reckon? Drop your thoughts below! 👇\n\n${includeHashtags ? `#${topic.toLowerCase().replace(/\s+/g, '')} #${tone} #socialmedia` : ''}`,
+  
+  `Crikey! Been diving deep into ${topic} lately and I'm totally hooked! This ${tone} perspective really hits different. 🔥\n\nWould love to hear your take on this! 💭\n\n${includeHashtags ? `#${topic.toLowerCase().replace(/\s+/g, '')} #${tone} #trending` : ''}`,
+  
+  `Fair dinkum, ${topic} has been on my radar and I can't get enough! This ${tone} angle is pure gold. ✨\n\nTag someone who needs to see this! 👥\n\n${includeHashtags ? `#${topic.toLowerCase().replace(/\s+/g, '')} #${tone} #content` : ''}`
+    ];
 
 What do you reckon? Drop your thoughts below! 👇
 
