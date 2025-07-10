@@ -1191,26 +1191,23 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-800">
-                    {userPlan === 'pro' ? '∞' : userPlan === 'credits' ? credits : `${dailyUsage}/${currentLimits.dailyLimit}`}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {userPlan === 'pro' ? 'unlimited' : userPlan === 'credits' ? 'credits left' : 'daily usage'}
-                  </div>
-                </div>
-              </div>
-              {userPlan !== 'pro' && (
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                  <div 
-                    className="h-2 rounded-full transition-all"
-                    style={{ 
-                      width: userPlan === 'credits' ? `${Math.min((credits / 50) * 100, 100)}%` : `${(dailyUsage / currentLimits.dailyLimit) * 100}%`,
-                      background: 'linear-gradient(135deg, #EA8953, #007B40)'
-                    }}
-                  ></div>
-                </div>
-              )}
-            </div>
+                 <div className={`rounded-lg p-4 ${userPlan === 'pro' ? 'bg-gradient-to-r from-teal-50 to-orange-50' : 'bg-gray-50'}`}>
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      {userPlan === 'pro' ? <Crown size={20} className="text-yellow-500" /> : <BarChart3 size={20} className="text-teal-600" />}
+      <span className="font-medium text-gray-800">
+        {userPlan === 'pro' ? 'Pro Croc' : userPlan === 'credits' ? 'Credit Pack' : 'Free Plan'}
+      </span>
+    </div>
+    <div className="text-right">
+      <div className="text-2xl font-bold text-gray-800">
+        {userPlan === 'pro' ? '∞' : aiCredits}
+      </div>
+      <div className="text-sm text-gray-600">
+        {userPlan === 'pro' ? 'unlimited AI' : 'AI credits left'}
+      </div>
+    </div>
+  </div>
 
             <div className="bg-orange-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
