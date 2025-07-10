@@ -1,3 +1,4 @@
+
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -121,6 +122,17 @@ export default function Home() {
   const canAddFavourite = () => {
     if (userPlan === 'pro') return true;
     return favouriteCount < currentLimits.maxFavourites;
+  };
+
+  const humanizeText = (text) => {
+    // Simple humanization - replace some patterns to make it less AI-obvious
+    return text
+      .replace(/\. This /g, '. This really ')
+      .replace(/\. The /g, '. The amazing ')
+      .replace(/I'm /g, "I'm genuinely ")
+      .replace(/It's /g, "It's honestly ")
+      .replace(/Amazing/g, 'Incredible')
+      .replace(/Great/g, 'Fantastic');
   };
 
   useEffect(() => {
@@ -349,20 +361,6 @@ export default function Home() {
     const hashtags = includeHashtags ? `\n\n#${topic.toLowerCase().replace(/\s+/g, '')} #${tone} #content` : '';
     
     return humanizeCaption ? humanizeText(randomTemplate + cta + hashtags) : randomTemplate + cta + hashtags;
-  };
-
-  const generateSimpleCaption = () => {
-    const intros = [
-      `G'day! Just discovered something amazing about ${topic}! This ${tone} approach is absolutely brilliant. 🐊`,
-      `Crikey! Been exploring ${topic} lately and I'm totally hooked! This ${tone} perspective really hits different. 🔥`,
-      `Fair dinkum, ${topic} has been on my radar and I can't get enough! This ${tone} angle is pure gold. ✨`
-    ];
-    
-    const randomIntro = intros[Math.floor(Math.random() * intros.length)];
-    const cta = callToAction || '\n\nWhat do you reckon? Drop your thoughts below! 👇';
-    const hashtags = includeHashtags ? `\n\n#${topic.toLowerCase().replace(/\s+/g, '')} #${tone} #socialmedia` : '';
-    
-    return randomIntro + cta + hashtags;
   };
 
   const applyCaptionStyle = (styleType) => {
@@ -782,311 +780,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Features Section */}
-        <div className="bg-white py-20">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">Everything you need to create amazing captions</h3>
-              <p className="text-xl text-gray-600">Powerful AI tools designed for social media success</p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8 mb-16">
-              <div className="text-center p-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-teal-100 to-teal-200 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="text-teal-600" size={32} />
-                </div>
-                <h4 className="text-xl font-semibold text-gray-900 mb-3">AI-Powered Caption Generator</h4>
-                <p className="text-gray-600">Create bite-sized captions that pack a punch with advanced AI that understands your brand voice and audience</p>
-              </div>
-
-              <div className="text-center p-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Star className="text-orange-600" size={32} />
-                </div>
-                <h4 className="text-xl font-semibold text-gray-900 mb-3">8 Caption Styling Options</h4>
-                <p className="text-gray-600">Transform any caption into multiple formats: minimalist, emoji-heavy, professional, listicle, and more</p>
-                <span className="inline-block bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full font-medium mt-2">Pro Feature</span>
-              </div>
-
-              <div className="text-center p-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-teal-100 to-orange-200 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <Heart className="text-teal-600" size={32} />
-                </div>
-                <h4 className="text-xl font-semibold text-gray-900 mb-3">Smart Content Library</h4>
-                <p className="text-gray-600">Save your best-performing captions, organize favorites, and never run out of content inspiration</p>
-              </div>
-            </div>
-
-            {/* Additional Features Grid */}
-            <div className="grid md:grid-cols-4 gap-6">
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <BarChart3 className="text-blue-600" size={20} />
-                </div>
-                <h5 className="font-semibold text-gray-800 mb-2">Character Optimization</h5>
-                <p className="text-sm text-gray-600">Perfect length for each platform's algorithm</p>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Zap className="text-purple-600" size={20} />
-                </div>
-                <h5 className="font-semibold text-gray-800 mb-2">13+ Tone Options</h5>
-                <p className="text-sm text-gray-600">From casual to viral-optimized</p>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <ExternalLink className="text-green-600" size={20} />
-                </div>
-                <h5 className="font-semibold text-gray-800 mb-2">Export & Schedule</h5>
-                <p className="text-sm text-gray-600">Connect to Buffer, Hootsuite, Later</p>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4 text-center">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                  <Download className="text-orange-600" size={20} />
-                </div>
-                <h5 className="font-semibold text-gray-800 mb-2">Bulk Export</h5>
-                <p className="text-sm text-gray-600">CSV export for content planning</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Pricing Preview Section */}
-        <div className="bg-gray-50 py-20">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">Simple, transparent pricing</h3>
-              <p className="text-xl text-gray-600">Start free, upgrade when you're ready to scale</p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              {/* Free Plan */}
-              <div className="bg-white rounded-lg border-2 border-gray-200 p-6 text-center">
-                <h4 className="text-lg font-bold text-gray-800 mb-2">Free Plan</h4>
-                <div className="text-3xl font-bold text-green-600 mb-4">$0<span className="text-lg text-gray-500">/month</span></div>
-                <ul className="text-left space-y-2 text-sm text-gray-600 mb-6">
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> 5 AI captions (one-time)</li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> Unlimited templates</li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> 3 platforms</li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> 10 tones</li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> Save 10 favorites</li>
-                </ul>
-                <button
-                  onClick={() => {setAuthMode('signup'); setShowAuthModal(true);}}
-                  className="w-full border-2 border-green-600 text-green-600 py-2 px-4 rounded-lg font-medium hover:bg-green-50 transition-colors"
-                >
-                  Get Started Free
-                </button>
-              </div>
-
-              {/* Pro Plan */}
-              <div className="bg-white rounded-lg border-2 border-teal-500 p-6 text-center relative transform scale-105">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-teal-500 text-white px-3 py-1 rounded-full text-sm font-medium">Most Popular</span>
-                </div>
-                <h4 className="text-lg font-bold text-gray-800 mb-2">Pro Croc</h4>
-                <div className="text-3xl font-bold text-teal-600 mb-4">$9<span className="text-lg text-gray-500">/month</span></div>
-                <ul className="text-left space-y-2 text-sm text-gray-600 mb-6">
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> <strong>Unlimited captions</strong></li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> <strong>All 6 platforms</strong></li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> <strong>13 tones + premium</strong></li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> <strong>8 styling options</strong></li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> <strong>Unlimited favorites</strong></li>
-                  <li className="flex items-center gap-2"><Heart size={14} className="text-orange-500" /> <strong>Priority support</strong></li>
-                </ul>
-                <button
-                  onClick={() => {setAuthMode('signup'); setShowAuthModal(true);}}
-                  className="w-full bg-teal-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-teal-700 transition-colors"
-                >
-                  Start Pro Trial
-                </button>
-              </div>
-
-              {/* Credit Pack */}
-              <div className="bg-white rounded-lg border-2 border-gray-200 p-6 text-center">
-                <h4 className="text-lg font-bold text-gray-800 mb-2">Credit Pack</h4>
-                <div className="text-3xl font-bold text-orange-600 mb-4">$5<span className="text-lg text-gray-500"> one-time</span></div>
-                <ul className="text-left space-y-2 text-sm text-gray-600 mb-6">
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> 50 caption credits</li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> No subscription</li>
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> Free platforms</li>
-                  <li className="flex items-center gap-2"><Lock size={14} className="text-gray-400" /> Standard features</li>
-                </ul>
-                <button
-                  onClick={() => {setAuthMode('signup'); setShowAuthModal(true);}}
-                  className="w-full border-2 border-orange-600 text-orange-600 py-2 px-4 rounded-lg font-medium hover:bg-orange-50 transition-colors"
-                >
-                  Buy Credits
-                </button>
-              </div>
-            </div>
-
-            <p className="text-center text-gray-500 text-sm mt-8">
-              All plans include caption variations, humanization, and character optimization
-            </p>
-          </div>
-        </div>
-
-        {/* Platform Support */}
-        <div className="bg-white py-20">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">Works with all your favorite platforms</h3>
-              <p className="text-xl text-gray-600">Optimized captions for every social media platform</p>
-            </div>
-            
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-8 items-center justify-items-center mb-12">
-              <div className="flex flex-col items-center gap-2">
-                <Instagram className="text-pink-500" size={40} />
-                <span className="text-sm font-medium text-gray-700">Instagram</span>
-                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Free</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <Facebook className="text-blue-600" size={40} />
-                <span className="text-sm font-medium text-gray-700">Facebook</span>
-                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Free</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <Sparkles className="text-purple-500" size={40} />
-                <span className="text-sm font-medium text-gray-700">TikTok</span>
-                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Free</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <Twitter className="text-blue-400" size={40} />
-                <span className="text-sm font-medium text-gray-700">Twitter/X</span>
-                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Pro</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <Linkedin className="text-blue-700" size={40} />
-                <span className="text-sm font-medium text-gray-700">LinkedIn</span>
-                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Pro</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <ShoppingBag className="text-orange-500" size={40} />
-                <span className="text-sm font-medium text-gray-700">Etsy</span>
-                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Pro</span>
-              </div>
-            </div>
-
-            {/* Platform Features */}
-            <div className="bg-gray-50 rounded-xl p-8">
-              <h4 className="text-xl font-bold text-gray-800 mb-6 text-center">Platform-Specific Optimization</h4>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Instagram className="text-pink-500" size={24} />
-                  </div>
-                  <h5 className="font-semibold text-gray-800 mb-2">Instagram Ready</h5>
-                  <p className="text-sm text-gray-600">Optimal character count, hashtag suggestions, and engagement-focused formatting</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Linkedin className="text-blue-700" size={24} />
-                  </div>
-                  <h5 className="font-semibold text-gray-800 mb-2">LinkedIn Professional</h5>
-                  <p className="text-sm text-gray-600">Business-focused tone, thought leadership style, and professional formatting</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <Sparkles className="text-purple-500" size={24} />
-                  </div>
-                  <h5 className="font-semibold text-gray-800 mb-2">TikTok Viral</h5>
-                  <p className="text-sm text-gray-600">Trend-aware content, hook-focused openings, and viral-optimized language</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Social Proof Section */}
-        <div className="bg-gradient-to-br from-teal-50 to-orange-50 py-20">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">Loved by content creators worldwide</h3>
-              <p className="text-xl text-gray-600">Join thousands who never run out of caption ideas</p>
-            </div>
-            
-            <div className="grid md:grid-cols-4 gap-8 mb-12">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-teal-600 mb-2">10,000+</div>
-                <div className="text-gray-600">Captions Generated</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-teal-600 mb-2">500+</div>
-                <div className="text-gray-600">Happy Creators</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-teal-600 mb-2">6</div>
-                <div className="text-gray-600">Social Platforms</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-teal-600 mb-2">24hr</div>
-                <div className="text-gray-600">Support Response</div>
-              </div>
-            </div>
-
-            {/* Testimonials */}
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="text-yellow-400 fill-current" size={16} />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-4">"CaptionCroc saves me hours every week. The AI really gets my brand voice!"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">SH</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-800">Sarah H.</div>
-                    <div className="text-sm text-gray-500">Instagram Influencer</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="text-yellow-400 fill-current" size={16} />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-4">"The styling options are brilliant. I can adapt any caption for different platforms instantly."</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">MJ</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-800">Mike J.</div>
-                    <div className="text-sm text-gray-500">Marketing Manager</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <div className="flex items-center gap-1 mb-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="text-yellow-400 fill-current" size={16} />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-4">"Finally, captions that don't sound like a robot wrote them. The humanizer feature is magic!"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">AL</span>
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-800">Alex L.</div>
-                    <div className="text-sm text-gray-500">Small Business Owner</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Final CTA */}
         <div className="py-20" style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)' }}>
           <div className="max-w-4xl mx-auto px-6 text-center">
@@ -1191,23 +884,15 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="text-right">
-                 <div className={`rounded-lg p-4 ${userPlan === 'pro' ? 'bg-gradient-to-r from-teal-50 to-orange-50' : 'bg-gray-50'}`}>
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-2">
-      {userPlan === 'pro' ? <Crown size={20} className="text-yellow-500" /> : <BarChart3 size={20} className="text-teal-600" />}
-      <span className="font-medium text-gray-800">
-        {userPlan === 'pro' ? 'Pro Croc' : userPlan === 'credits' ? 'Credit Pack' : 'Free Plan'}
-      </span>
-    </div>
-    <div className="text-right">
-      <div className="text-2xl font-bold text-gray-800">
-        {userPlan === 'pro' ? '∞' : aiCredits}
-      </div>
-      <div className="text-sm text-gray-600">
-        {userPlan === 'pro' ? 'unlimited AI' : 'AI credits left'}
-      </div>
-    </div>
-  </div>
+                  <div className="text-2xl font-bold text-gray-800">
+                    {userPlan === 'pro' ? '∞' : aiCredits}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {userPlan === 'pro' ? 'unlimited AI' : 'AI credits left'}
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="bg-orange-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
@@ -1416,7 +1101,7 @@ export default function Home() {
                     ) : !canGenerateCaption() ? (
                       <>
                         <Lock size={16} />
-                        {userPlan === 'free' ? 'Daily Limit Reached' : userPlan === 'credits' ? 'No Credits Left' : 'Upgrade Required'}
+                        {userPlan === 'free' && aiCredits === 0 ? 'AI Credits Used - Template Mode' : userPlan === 'credits' ? 'No Credits Left' : 'Upgrade Required'}
                       </>
                     ) : (
                       <>
@@ -1575,7 +1260,8 @@ export default function Home() {
                     {userPlan === 'free' && <span className="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-sm mt-2">Current Plan</span>}
                   </div>
                   <ul className="space-y-3 text-sm">
-                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> {currentLimits.dailyLimit} captions per day</li>
+                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 5 AI captions (one-time)</li>
+                    <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Unlimited template captions</li>
                     <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> {currentLimits.platforms.length} platforms ({currentLimits.platforms.slice(0,2).join(', ')}, etc.)</li>
                     <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> {currentLimits.tones.length} tone options</li>
                     <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Save up to {currentLimits.maxFavourites} favourites</li>
@@ -1626,7 +1312,7 @@ export default function Home() {
                     <li className="flex items-center gap-2"><Lock size={16} className="text-gray-400" /> Limited to 10 favorites</li>
                   </ul>
                   <button 
-                    onClick={() => {setUserPlan('credits'); setCredits(prev => prev + 50);}}
+                    onClick={() => {setUserPlan('credits'); setAiCredits(prev => prev + 50);}}
                     className="w-full mt-6 bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors"
                   >
                     {userPlan === 'credits' ? 'Buy More Credits' : 'Buy Credits'}
