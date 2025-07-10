@@ -25,8 +25,7 @@ export default function Home() {
   
   // Subscription & Credits State
   const [userPlan, setUserPlan] = useState('free'); // 'free', 'pro', 'credits'
-  const [credits, setCredits] = useState(0); // For one-time credit pack
-  const [dailyUsage, setDailyUsage] = useState(0);
+  const [aiCredits, setAiCredits] = useState(5); // AI credits remaining
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
   // Features State
@@ -43,25 +42,26 @@ export default function Home() {
   // Subscription Configuration
   const subscriptionLimits = {
     free: {
-      dailyLimit: 10,
+      aiCredits: 5, // One-time AI credits for new users
+      templateCaptions: 'unlimited', // Template-based fallbacks
       platforms: ['Instagram', 'Facebook', 'TikTok'],
       tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
       maxFavourites: 10,
-      features: ['Caption Variations', 'Humanizer', 'Character Guides']
+      features: ['AI Taste Test', 'Template Captions', 'Character Guides']
     },
     pro: {
-      dailyLimit: Infinity,
+      aiCredits: 'unlimited',
       platforms: ['Instagram', 'Facebook', 'TikTok', 'Twitter/X', 'LinkedIn', 'Etsy'],
       tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly', 'edgy', 'witty', 'viral-optimised'],
       maxFavourites: Infinity,
-      features: ['Everything in Free', 'Caption Styling', 'All Platforms', 'Premium Tones', 'Instant Tweaking', '24hr Support']
+      features: ['Unlimited AI', 'Caption Styling', 'All Platforms', 'Premium Tones', 'Instant Tweaking', '24hr Support']
     },
     credits: {
-      dailyLimit: Infinity,
+      aiCredits: 50, // 50 AI credits purchased
       platforms: ['Instagram', 'Facebook', 'TikTok'],
       tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
       maxFavourites: 10,
-      features: ['No Subscription', 'Pay Per Use', 'Free Platforms Only']
+      features: ['No Subscription', 'AI Credits', 'Free Platforms Only']
     }
   };
 
@@ -106,8 +106,15 @@ export default function Home() {
 
   const canGenerateCaption = () => {
     if (userPlan === 'pro') return true;
-    if (userPlan === 'credits' && credits > 0) return true;
-    if (userPlan === 'free' && dailyUsage < currentLimits.dailyLimit) return true;
+    if (userPlan === 'credits' && aiCredits > 0) return true;
+    if (userPlan === 'free' && aiCredits > 0) return true;
+    return false;
+  };
+
+  const canUseAI = () => {
+    if (userPlan === 'pro') return true;
+    if (userPlan === 'credits' && aiCredits > 0) return true;
+    if (userPlan === 'free' && aiCredits > 0) return true;
     return false;
   };
 
@@ -147,8 +154,7 @@ export default function Home() {
         setShowLandingPage(true);
         setSavedCaptions([]);
         setUserPlan('free');
-        setDailyUsage(0);
-        setCredits(0);
+        setAiCredits(5);
       }
     });
 
@@ -225,65 +231,83 @@ export default function Home() {
     setIsGenerating(true);
     
     try {
-      // Call our OpenAI API route
-      const response = await fetch('/api/generate-caption', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          topic,
-          tone,
-          platform,
-          includeHashtags
-        }),
-      });
+      let variations = [];
+      let isAIGenerated = false;
 
-      const data = await response.json();
-      console.log('API Response:', data); // Debug line
+      // Check if we can use AI or should use templates
+      if (canUseAI()) {
+        try {
+          // Try AI generation first
+          const response = await fetch('/api/generate-caption', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              topic,
+              tone,
+              platform,
+              includeHashtags
+            }),
+          });
 
-      if (data.success && data.variations) {
-        // Use real AI-generated variations
-        console.log('Using API variations:', data.variations);
-        setCaptionVariations(data.variations);
-        setGeneratedCaption(data.variations[0]);
-        setSelectedVariation(0);
-        setShowVariations(true);
-        setOriginalCaption(data.variations[0]);
-        setShowStylingPanel(true);
+          const data = await response.json();
+          console.log('API Response:', data);
+
+          if (data.success && data.variations) {
+            variations = data.variations;
+            isAIGenerated = true;
+            
+            // Deduct AI credit
+            if (userPlan === 'free' || userPlan === 'credits') {
+              setAiCredits(prev => prev - 1);
+            }
+          } else {
+            throw new Error('AI generation failed');
+          }
+        } catch (error) {
+          console.error('AI generation failed, using templates:', error);
+          // Fall back to templates if AI fails
+          variations = [
+            generateTemplateCaption('variation1'),
+            generateTemplateCaption('variation2'),
+            generateTemplateCaption('variation3')
+          ];
+        }
       } else {
-        // Fall back to simple captions if AI fails
-        const fallbackVariations = [
-          generateSimpleCaption(),
-          generateSimpleCaption(),
-          generateSimpleCaption()
+        // Use template-based captions (unlimited for free users)
+        variations = [
+          generateTemplateCaption('variation1'),
+          generateTemplateCaption('variation2'),
+          generateTemplateCaption('variation3')
         ];
-        
-        setCaptionVariations(fallbackVariations);
-        setGeneratedCaption(fallbackVariations[0]);
-        setSelectedVariation(0);
-        setShowVariations(true);
-        setOriginalCaption(fallbackVariations[0]);
-        setShowStylingPanel(true);
-        
-        alert('Used backup caption generator - AI service temporarily unavailable');
       }
+      
+      setCaptionVariations(variations);
+      setGeneratedCaption(variations[0]);
+      setSelectedVariation(0);
+      setShowVariations(true);
+      setOriginalCaption(variations[0]);
+      setShowStylingPanel(true);
 
-      // Update usage
-      if (userPlan === 'free') {
-        setDailyUsage(prev => prev + 1);
-      } else if (userPlan === 'credits') {
-        setCredits(prev => prev - 1);
+      // Show appropriate message
+      if (isAIGenerated) {
+        if (userPlan === 'free' && aiCredits <= 1) {
+          alert(`🤖 AI caption generated! You have ${aiCredits - 1} AI credits left. Upgrade for unlimited AI!`);
+        }
+      } else if (userPlan === 'free' && aiCredits === 0) {
+        alert('🎨 Using template caption! Your AI credits are used up. Upgrade for unlimited AI captions!');
+        setShowUpgradeModal(true);
       }
       
     } catch (error) {
       console.error('Caption generation error:', error);
       
-      // Use simple fallback captions if everything fails
+      // Final fallback to simple templates
       const fallbackVariations = [
-        generateSimpleCaption(),
-        generateSimpleCaption(),
-        generateSimpleCaption()
+        generateTemplateCaption('variation1'),
+        generateTemplateCaption('variation2'),
+        generateTemplateCaption('variation3')
       ];
       
       setCaptionVariations(fallbackVariations);
@@ -293,10 +317,38 @@ export default function Home() {
       setOriginalCaption(fallbackVariations[0]);
       setShowStylingPanel(true);
       
-      alert('Using backup caption generator - please check your connection');
+      alert('Using template captions - please check your connection');
     }
     
     setIsGenerating(false);
+  };
+
+  const generateTemplateCaption = (variation = 'default') => {
+    const templates = {
+      variation1: [
+        `Just discovered something amazing about ${topic}! This ${tone} approach is absolutely brilliant. ✨`,
+        `Can't stop thinking about ${topic}! This ${tone} perspective really resonates with me. 🔥`,
+        `Had to share my thoughts on ${topic}! This ${tone} angle is exactly what we need. 💡`
+      ],
+      variation2: [
+        `${topic} has been on my mind lately and I'm totally fascinated! The ${tone} approach is game-changing. 🚀`,
+        `Been exploring ${topic} and I'm completely hooked! This ${tone} take is pure inspiration. ⭐`,
+        `Deep dive into ${topic} today and wow! This ${tone} perspective is eye-opening. 🎯`
+      ],
+      variation3: [
+        `Quick thoughts on ${topic}: this ${tone} approach is absolutely phenomenal. Amazing insights! 💫`,
+        `${topic} update: loving this ${tone} direction! So much potential here. Exciting times! 🌟`,
+        `Fresh take on ${topic} that's got me excited! This ${tone} strategy is brilliant. Can't wait to see more! 🎉`
+      ]
+    };
+    
+    const selectedTemplates = templates[variation] || templates.variation1;
+    const randomTemplate = selectedTemplates[Math.floor(Math.random() * selectedTemplates.length)];
+    
+    const cta = callToAction || '\n\nWhat do you think? Share your thoughts below! 👇';
+    const hashtags = includeHashtags ? `\n\n#${topic.toLowerCase().replace(/\s+/g, '')} #${tone} #content` : '';
+    
+    return humanizeCaption ? humanizeText(randomTemplate + cta + hashtags) : randomTemplate + cta + hashtags;
   };
 
   const generateSimpleCaption = () => {
@@ -599,10 +651,11 @@ export default function Home() {
                   {userPlan === 'free' && <span className="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-sm mt-2">Current Plan</span>}
                 </div>
                 <ul className="space-y-2 text-sm mb-6">
-                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 10 captions per day</li>
-                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 3 platforms (Instagram, Facebook, TikTok)</li>
+                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 5 AI captions (one-time)</li>
+                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Unlimited templates</li>
+                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 3 platforms</li>
                   <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> 10 tone options</li>
-                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Save up to 10 favourites</li>
+                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Save 10 favourites</li>
                   <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> Caption variations</li>
                 </ul>
               </div>
@@ -648,7 +701,7 @@ export default function Home() {
                   <li className="flex items-center gap-2"><Lock size={16} className="text-gray-400" /> No styling options</li>
                 </ul>
                 <button 
-                  onClick={() => {setUserPlan('credits'); setCredits(prev => prev + 50); setShowUpgradeModal(false);}}
+                  onClick={() => {setUserPlan('credits'); setAiCredits(prev => prev + 50); setShowUpgradeModal(false);}}
                   className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors"
                 >
                   Buy Credit Pack - $5
@@ -722,7 +775,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>10 captions daily</span>
+                  <span>5 AI credits free</span>
                 </div>
               </div>
             </div>
@@ -815,7 +868,8 @@ export default function Home() {
                 <h4 className="text-lg font-bold text-gray-800 mb-2">Free Plan</h4>
                 <div className="text-3xl font-bold text-green-600 mb-4">$0<span className="text-lg text-gray-500">/month</span></div>
                 <ul className="text-left space-y-2 text-sm text-gray-600 mb-6">
-                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> 10 captions per day</li>
+                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> 5 AI captions (one-time)</li>
+                  <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> Unlimited templates</li>
                   <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> 3 platforms</li>
                   <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> 10 tones</li>
                   <li className="flex items-center gap-2"><Zap size={14} className="text-green-500" /> Save 10 favorites</li>
@@ -1233,9 +1287,9 @@ export default function Home() {
                 <div className="flex items-start gap-3">
                   <AlertCircle className="text-green-600 mt-0.5" size={20} />
                   <div>
-                    <h3 className="font-medium text-green-800 mb-1">🤖 OpenAI Integration Ready! 🎉</h3>
+                    <h3 className="font-medium text-green-800 mb-1">🎯 AI Taste Test Model Active! 🎉</h3>
                     <p className="text-sm text-green-700">
-                      Your app will try to use real AI, with smart fallbacks if needed!
+                      New users get 5 AI credits to experience premium quality. After that, enjoy unlimited template captions!
                     </p>
                   </div>
                 </div>
