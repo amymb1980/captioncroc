@@ -1192,22 +1192,28 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-800">
-                    {userPlan === 'pro' ? '∞' : userPlan === 'credits' ? credits : `${dailyUsage}/${currentLimits.dailyLimit}`}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {userPlan === 'pro' ? 'unlimited' : userPlan === 'credits' ? 'credits left' : 'daily usage'}
-                  </div>
-                </div>
-              </div>
-              {userPlan !== 'pro' && (
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-                  <div 
-                    className="h-2 rounded-full transition-all"
-                    style={{ 
-                      width: userPlan === 'credits' ? `${Math.min((credits / 50) * 100, 100)}%` : `${(dailyUsage / currentLimits.dailyLimit) * 100}%`,
-                      background: 'linear-gradient(135deg, #EA8953, #007B40)'
-                    }}
+  <div className="text-2xl font-bold text-gray-800">
+    {userPlan === 'pro' ? '∞' : aiCredits}
+  </div>
+  <div className="text-sm text-gray-600">
+    {userPlan === 'pro' ? 'unlimited AI' : 'AI credits left'}
+  </div>
+</div>
+</div>
+{userPlan !== 'pro' && (
+  <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+    <div 
+      className="h-2 rounded-full transition-all"
+      style={{ 
+        width: userPlan === 'credits' ? `${Math.min((aiCredits / 50) * 100, 100)}%` : `${Math.min((aiCredits / 5) * 100, 100)}%`,
+        background: 'linear-gradient(135deg, #EA8953, #007B40)'
+      }}
+    ></div>
+  </div>
+)}
+{userPlan === 'free' && aiCredits === 0 && (
+  <p className="text-xs text-orange-600 mt-2">✨ Unlimited template captions available!</p>
+)}
                   ></div>
                 </div>
               )}
