@@ -1,4 +1,3 @@
-
 'use client'
 
 import React, { useState, useEffect } from 'react';
@@ -774,6 +773,163 @@ export default function Home() {
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <span>5 AI credits free</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Platform Support */}
+        <div className="bg-white py-20">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Works with all your favorite platforms</h3>
+              <p className="text-xl text-gray-600">Optimized captions for every social media platform</p>
+            </div>
+            
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-8 items-center justify-items-center mb-12">
+              <div className="flex flex-col items-center gap-2">
+                <Instagram className="text-pink-500" size={40} />
+                <span className="text-sm font-medium text-gray-700">Instagram</span>
+                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Free</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <Facebook className="text-blue-600" size={40} />
+                <span className="text-sm font-medium text-gray-700">Facebook</span>
+                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Free</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <Sparkles className="text-purple-500" size={40} />
+                <span className="text-sm font-medium text-gray-700">TikTok</span>
+                <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Free</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <Twitter className="text-blue-400" size={40} />
+                <span className="text-sm font-medium text-gray-700">Twitter/X</span>
+                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Pro</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <Linkedin className="text-blue-700" size={40} />
+                <span className="text-sm font-medium text-gray-700">LinkedIn</span>
+                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Pro</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <ShoppingBag className="text-orange-500" size={40} />
+                <span className="text-sm font-medium text-gray-700">Etsy</span>
+                <span className="text-xs text-orange-600 bg-orange-100 px-2 py-1 rounded-full">Pro</span>
+              </div>
+            </div>
+
+            {/* Platform Features */}
+            <div className="bg-gray-50 rounded-xl p-8">
+              <h4 className="text-xl font-bold text-gray-800 mb-6 text-center">Platform-Specific Optimization</h4>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Instagram className="text-pink-500" size={24} />
+                  </div>
+                  <h5 className="font-semibold text-gray-800 mb-2">Instagram Ready</h5>
+                  <p className="text-sm text-gray-600">Optimal character count, hashtag suggestions, and engagement-focused formatting</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Linkedin className="text-blue-700" size={24} />
+                  </div>
+                  <h5 className="font-semibold text-gray-800 mb-2">LinkedIn Professional</h5>
+                  <p className="text-sm text-gray-600">Business-focused tone, thought leadership style, and professional formatting</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
+                    <Sparkles className="text-purple-500" size={24} />
+                  </div>
+                  <h5 className="font-semibold text-gray-800 mb-2">TikTok Viral</h5>
+                  <p className="text-sm text-gray-600">Trend-aware content, hook-focused openings, and viral-optimized language</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Social Proof Section */}
+        <div className="bg-gradient-to-br from-teal-50 to-orange-50 py-20">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">Loved by content creators worldwide</h3>
+              <p className="text-xl text-gray-600">Join thousands who never run out of caption ideas</p>
+            </div>
+            
+            <div className="grid md:grid-cols-4 gap-8 mb-12">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-teal-600 mb-2">10,000+</div>
+                <div className="text-gray-600">Captions Generated</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-teal-600 mb-2">500+</div>
+                <div className="text-gray-600">Happy Creators</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-teal-600 mb-2">6</div>
+                <div className="text-gray-600">Social Platforms</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-teal-600 mb-2">24hr</div>
+                <div className="text-gray-600">Support Response</div>
+              </div>
+            </div>
+
+            {/* Testimonials */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="text-yellow-400 fill-current" size={16} />
+                  ))}
+                </div>
+                <p className="text-gray-600 mb-4">"CaptionCroc saves me hours every week. The AI really gets my brand voice!"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-teal-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-medium text-sm">SH</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-800">Sarah H.</div>
+                    <div className="text-sm text-gray-500">Instagram Influencer</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="text-yellow-400 fill-current" size={16} />
+                  ))}
+                </div>
+                <p className="text-gray-600 mb-4">"The styling options are brilliant. I can adapt any caption for different platforms instantly."</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-medium text-sm">MJ</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-800">Mike J.</div>
+                    <div className="text-sm text-gray-500">Marketing Manager</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg p-6 shadow-sm">
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="text-yellow-400 fill-current" size={16} />
+                  ))}
+                </div>
+                <p className="text-gray-600 mb-4">"Finally, captions that don't sound like a robot wrote them. The humanizer feature is magic!"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-medium text-sm">AL</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-800">Alex L.</div>
+                    <div className="text-sm text-gray-500">Small Business Owner</div>
+                  </div>
                 </div>
               </div>
             </div>
