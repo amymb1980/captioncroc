@@ -187,13 +187,13 @@ export default function Home() {
    const loadUserProfile = async (userId) => {
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('ai_credits, user_plan')
+      .select('ai_credits, plan')
       .eq('id', userId)
       .single();
 
     if (!error && data) {
       setAiCredits(data.ai_credits);
-      setUserPlan(data.user_plan);
+      setUserPlan(data, plan);
     } else {
       // Create profile if it doesn't exist (for existing users)
       const { error: insertError } = await supabase
@@ -201,7 +201,7 @@ export default function Home() {
         .insert([{
           id: userId,
           ai_credits: 5,
-          user_plan: 'free'
+          plan: 'free'
         }]);
       
       if (!insertError) {
@@ -235,7 +235,7 @@ export default function Home() {
     const { error } = await supabase
       .from('user_profiles')
       .update({ 
-        user_plan: newPlan,
+        plan: newPlan,
         ai_credits: newCredits
       })
       .eq('id', user.id);
