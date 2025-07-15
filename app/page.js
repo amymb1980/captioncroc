@@ -184,6 +184,68 @@ export default function Home() {
     }
   };
 
+   const loadUserProfile = async (userId) => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select('ai_credits, user_plan')
+      .eq('id', userId)
+      .single();
+
+    if (!error && data) {
+      setAiCredits(data.ai_credits);
+      setUserPlan(data.user_plan);
+    } else {
+      // Create profile if it doesn't exist (for existing users)
+      const { error: insertError } = await supabase
+        .from('user_profiles')
+        .insert([{
+          id: userId,
+          ai_credits: 5,
+          user_plan: 'free'
+        }]);
+      
+      if (!insertError) {
+        setAiCredits(5);
+        setUserPlan('free');
+      }
+    }
+  };
+
+  const updateUserCredits = async (newCredits) => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ ai_credits: newCredits })
+      .eq('id', user.id);
+      
+    if (!error) {
+      setAiCredits(newCredits);
+    }
+  };
+
+  const updateUserPlan = async (newPlan) => {
+    if (!user) return;
+    
+    let newCredits = aiCredits;
+    if (newPlan === 'credits') {
+      newCredits = aiCredits + 50;
+    }
+    
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ 
+        user_plan: newPlan,
+        ai_credits: newCredits
+      })
+      .eq('id', user.id);
+      
+    if (!error) {
+      setUserPlan(newPlan);
+      setAiCredits(newCredits);
+    }
+  };
+
   const handleAuth = async (email, password, mode) => {
     setAuthLoading(true);
     
