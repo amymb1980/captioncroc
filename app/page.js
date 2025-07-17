@@ -257,6 +257,11 @@ export default function Home() {
       setAiCredits(newCredits);
     }
   };
+  const selectVariation = (index) => {
+    setSelectedVariation(index);
+    setGeneratedCaption(captionVariations[index]);
+    setOriginalCaption(captionVariations[index]);
+  };
 
   const handleAuth = async (email, password, mode) => {
     setAuthLoading(true);
@@ -1343,34 +1348,65 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800">Generated Caption</h3>
-                  
-                  <textarea
-                    value={generatedCaption}
-                    readOnly
-                    placeholder="Your AI-generated caption will appear here..."
-                    className="w-full h-64 p-4 border border-gray-300 rounded-lg bg-gray-50 resize-none"
-                  />
-                  
-                  {generatedCaption && (
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => copyToClipboard(generatedCaption)}
-                        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                      >
-                        <Copy size={16} className="text-gray-600" />
-                        Copy
-                      </button>
-                      <button
-                        onClick={saveCaption}
-                        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                      >
-                        <Save size={16} className="text-gray-600" />
-                        Save
-                      </button>
-                    </div>
-                  )}
-                </div>
+  <div className="flex items-center justify-between">
+    <h3 className="text-lg font-semibold text-gray-800">Generated Caption</h3>
+    {showVariations && captionVariations.length > 1 && (
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-600">Variation:</span>
+        <div className="flex gap-1">
+          {captionVariations.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                setSelectedVariation(index);
+                setGeneratedCaption(captionVariations[index]);
+              }}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                selectedVariation === index
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+  
+  <textarea
+    value={generatedCaption}
+    readOnly
+    placeholder="Your AI-generated caption will appear here..."
+    className="w-full h-64 p-4 border border-gray-300 rounded-lg bg-gray-50 resize-none"
+  />
+  
+  {generatedCaption && (
+    <div className="flex gap-2 mt-3">
+      <button
+        onClick={() => copyToClipboard(generatedCaption)}
+        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+      >
+        <Copy size={16} className="text-gray-600" />
+        Copy
+      </button>
+      <button
+        onClick={saveCaption}
+        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+      >
+        <Save size={16} className="text-gray-600" />
+        Save
+      </button>
+      {showVariations && captionVariations.length > 1 && (
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>•</span>
+          <span>{captionVariations.length} variations generated</span>
+        </div>
+      )}
+    </div>
+  )}
+</div>
               </div>
             </div>
           )}
