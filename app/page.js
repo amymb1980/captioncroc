@@ -191,16 +191,20 @@ export default function Home() {
   };
 
    const loadUserProfile = async (userId) => {
+     console.log('🔍 Loading profile for user:', userId);
     const { data, error } = await supabase
       .from('user_profiles')
       .select('ai_credits, plan')
       .eq('id', userId)
       .single();
+     console.log('🔍 Profile data:', data, 'Error:', error);
 
     if (!error && data) {
+      console.log('✅ Setting credits to:', data.ai_credits, 'plan to:', data.plan);
       setAiCredits(data.ai_credits);
       setUserPlan(data.plan);
     } else {
+      console.log('⚠️ Creating new profile...');
       // Create profile if it doesn't exist (for existing users)
       const { error: insertError } = await supabase
         .from('user_profiles')
@@ -218,6 +222,7 @@ export default function Home() {
   };
 
   const updateUserCredits = async (newCredits) => {
+    console.log('🔥 updateUserCredits called with:', newCredits);
     if (!user) return;
     
     const { error } = await supabase
@@ -226,6 +231,7 @@ export default function Home() {
       .eq('id', user.id);
       
     if (!error) {
+      console.error('❌ Database update failed:', error);
       setAiCredits(newCredits);
     }
   };
@@ -744,7 +750,7 @@ export default function Home() {
                   <li className="flex items-center gap-2"><Heart size={16} className="text-orange-500" /> <strong>24hr human support</strong></li>
                 </ul>
                 <button 
-                  onClick={() => {setUserPlan('pro'); setShowUpgradeModal(false);}}
+                  onClick={() => {updateUserPlan('pro'); setShowUpgradeModal(false);}}
                   className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-teal-700 transition-colors"
                 >
                   Upgrade to Pro Croc - $9/month
@@ -766,7 +772,7 @@ export default function Home() {
                   <li className="flex items-center gap-2"><Lock size={16} className="text-gray-400" /> No styling options</li>
                 </ul>
                 <button 
-                  onClick={() => {setUserPlan('credits'); setAiCredits(prev => prev + 50); setShowUpgradeModal(false);}}
+                  onClick={() => {updateUserPlan('credits'); setShowUpgradeModal(false);}}
                   className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors"
                 >
                   Buy Credit Pack - $5
