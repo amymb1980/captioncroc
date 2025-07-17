@@ -159,7 +159,13 @@ export default function Home() {
       if (session?.user) {
         setUser(session.user);
         setShowLandingPage(false);
-        setTimeout(() => loadCaptions(session.user.id), 0);
+        loadUserProfile(session.user.id);
+
+        setTimeout(() => {
+          loadCaptions(session.user.id);
+          loadUserProfile(session.user.id);  // ADD THIS LINE
+      }, 0);
+        //setTimeout(() => loadCaptions(session.user.id), 0);
       } else {
         setUser(null);
         setShowLandingPage(true);
@@ -193,7 +199,7 @@ export default function Home() {
 
     if (!error && data) {
       setAiCredits(data.ai_credits);
-      setUserPlan(data, plan);
+      setUserPlan(data.plan);
     } else {
       // Create profile if it doesn't exist (for existing users)
       const { error: insertError } = await supabase
@@ -333,7 +339,7 @@ export default function Home() {
             
             // Deduct AI credit
             if (userPlan === 'free' || userPlan === 'credits') {
-              setAiCredits(prev => prev - 1);
+              updateUserCredits(aiCredits - 1);
             }
           } else {
             throw new Error('AI generation failed');
