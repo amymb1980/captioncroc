@@ -1357,10 +1357,8 @@ export default function Home() {
           {captionVariations.map((_, index) => (
             <button
               key={index}
-              onClick={() => {
-                setSelectedVariation(index);
-                setGeneratedCaption(captionVariations[index]);
-              }}
+              onClick={() => selectVariation(index)}
+              }
               className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 selectedVariation === index
                   ? 'bg-teal-600 text-white'
