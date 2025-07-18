@@ -1484,6 +1484,7 @@ const applyCaptionStyle = (styleType) => {
       )}
     </div>
   )}
+  <StylingPanel />
 </div>
               </div>
             </div>
