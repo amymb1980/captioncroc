@@ -263,6 +263,49 @@ export default function Home() {
     setOriginalCaption(captionVariations[index]);
   };
 
+  const StylingPanel = () => {
+  if (userPlan !== 'pro' || !generatedCaption) return null;
+
+  const styles = [
+    { id: 'minimalist', name: 'Minimalist', desc: 'Clean, emoji-free', icon: '🎯' },
+    { id: 'emoji-heavy', name: 'Emoji Heavy', desc: 'Extra emojis', icon: '😍' },
+    { id: 'professional', name: 'Professional', desc: 'Business tone', icon: '💼' },
+    { id: 'listicle', name: 'Listicle', desc: 'Numbered points', icon: '📝' },
+    { id: 'story', name: 'Storytelling', desc: 'Narrative style', icon: '📖' },
+    { id: 'question', name: 'Question Hook', desc: 'Engaging questions', icon: '❓' },
+    { id: 'urgent', name: 'Urgent', desc: 'Action-focused', icon: '🚨' },
+    { id: 'casual', name: 'Casual', desc: 'Relaxed tone', icon: '😊' }
+  ];
+
+  return (
+    <div className="mt-4 p-4 bg-gradient-to-r from-teal-50 to-orange-50 border border-teal-200 rounded-lg">
+      <div className="flex items-center gap-2 mb-3">
+        <Crown className="text-yellow-500" size={16} />
+        <h4 className="font-semibold text-gray-800">Pro Styling Options</h4>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        {styles.map((style) => (
+          <button
+            key={style.id}
+            onClick={() => applyCaptionStyle(style.id)}
+            className="p-2 text-left border border-gray-200 rounded-lg hover:border-teal-300 hover:bg-white transition-colors bg-white/50"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">{style.icon}</span>
+              <span className="font-medium text-sm text-gray-800">{style.name}</span>
+            </div>
+            <div className="text-xs text-gray-600">{style.desc}</div>
+          </button>
+        ))}
+      </div>
+      <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+        💡 Tip: Apply styling after selecting your preferred variation
+      </div>
+    </div>
+  );
+};
+
+
   const handleAuth = async (email, password, mode) => {
     setAuthLoading(true);
     
