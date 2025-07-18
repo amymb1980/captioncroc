@@ -489,56 +489,52 @@ const applyCaptionStyle = (styleType) => {
   
   let styledCaption = originalCaption;
   
+  // Split the caption into parts (main content, CTA, hashtags)
+  const parts = originalCaption.split('\n\n');
+  const mainContent = parts[0] || '';
+  const cta = parts[1] || 'What do you think?';
+  const hashtags = parts[2] || '';
+  
   switch (styleType) {
     case 'minimalist':
       styledCaption = originalCaption.replace(/[🎉🎊✨🔥💯⭐🐊👇💫🌟🎯🚀⭐]/g, '').replace(/\n\n+/g, '\n\n').trim();
       break;
+      
     case 'emoji-heavy':
       styledCaption = originalCaption.replace(/\./g, '. ✨').replace(/!/g, '! 🔥').replace(/\?/g, '? 💭');
       break;
+      
     case 'professional':
       styledCaption = originalCaption
         .replace(/[🎉🎊✨🔥💯🐊👇💫🌟🎯🚀⭐]/g, '')
-        .replace(/G'day!/g, 'Hello,')
-        .replace(/Crikey!/g, 'Remarkably,')
-        .replace(/bonkers/g, 'effective')
         .replace(/amazing/g, 'impressive')
+        .replace(/brilliant/g, 'effective')
         .replace(/What do you think\?/g, 'I welcome your thoughts on this.')
-        .replace(/Drop your thoughts below!/g, 'Please share your insights.');
+        .replace(/Share your thoughts below!/g, 'Please share your insights.');
       break;
+      
     case 'listicle':
-      const parts = originalCaption.split('\n\n');
-      const mainContent = parts[0];
-      const cta = parts[1] || 'What do you think?';
-      const hashtags = parts[2] || '';
       styledCaption = `Here's what you need to know:\n\n1. ${mainContent}\n2. This approach delivers real results\n3. Perfect for getting started\n\n${cta}\n\n${hashtags}`;
       break;
+      
     case 'story':
-      const parts = originalCaption.split('\n\n');
-      const mainContent = parts[0];
-      const cta = parts[1] || 'What do you think?';
-      const hashtags = parts[2] || '';
-      styledCaption = `📖 Here's my story...\n\nLast week, I stumbled upon something that changed everything about ${topic}. ${mainContent.replace(/^[^.!?]*[.!?]/, '').trim()}\n\nIt was one of those "aha!" moments that made me realize how much this could impact my work. 💡\n\n${cta}\n\n${hashtags}`;
+      styledCaption = `📖 Here's my story...\n\nLast week, I discovered something amazing about ${topic}. ${mainContent}\n\nIt was one of those "aha!" moments that made me realize how much this could impact my work. 💡\n\n${cta}\n\n${hashtags}`;
       break;
+      
     case 'question':
-      const questionStarters = ['🤔 Ever wondered about', '💡 What if', '❓ Have you considered', '🔍 What would happen if'];
-      const randomStarter = questionStarters[Math.floor(Math.random() * questionStarters.length)];
-      const parts2 = originalCaption.split('\n\n');
-      const hashtags2 = parts2[parts2.length - 1].startsWith('#') ? parts2[parts2.length - 1] : '';
-      styledCaption = `${randomStarter} ${topic}?\n\n${originalCaption.split('\n\n')[0]}\n\nThe answer might surprise you! 🤯\n\nWhat's your take on this? Let me know below! 👇\n\n${hashtags2}`;
+      styledCaption = `🤔 Ever wondered about ${topic}?\n\n${mainContent}\n\nThe answer might surprise you! 🤯\n\nWhat's your take on this? Let me know below! 👇\n\n${hashtags}`;
       break;
+      
     case 'urgent':
-      const parts3 = originalCaption.split('\n\n');
-      const mainContent3 = parts3[0];
-      const hashtags3 = parts3[parts3.length - 1].startsWith('#') ? parts3[parts3.length - 1] : '';
-      styledCaption = `🚨 URGENT: This changes everything about ${topic}!\n\n⏰ Time-sensitive insight: ${mainContent3}\n\n🔥 Don't wait - this opportunity won't last forever!\n\n👆 SAVE this post before it's too late!\n\nACT NOW - what's your immediate reaction? 👇\n\n${hashtags3}`;
+      styledCaption = `🚨 URGENT: This changes everything about ${topic}!\n\n⏰ Time-sensitive insight: ${mainContent}\n\n🔥 Don't wait - this opportunity won't last forever!\n\nACT NOW - what's your reaction? 👇\n\n${hashtags}`;
       break;
+      
     case 'casual':
-      const parts4 = originalCaption.split('\n\n');
-      const mainContent4 = parts4[0];
-      const hashtags4 = parts4[parts4.length - 1].startsWith('#') ? parts4[parts4.length - 1] : '';
-      styledCaption = `Hey there! 👋\n\nSo I was just thinking about ${topic} and honestly? ${mainContent4.toLowerCase().replace(/^./, match => match.toUpperCase())}\n\nLike, seriously - this stuff is pretty cool when you think about it! 😊\n\nWhat do you reckon? Am I onto something here or am I just being weird? 😅\n\nLet me know what you think! 💭\n\n${hashtags4}`;
+      styledCaption = `Hey there! 👋\n\nSo I was just thinking about ${topic} and honestly? ${mainContent}\n\nLike, seriously - this stuff is pretty cool when you think about it! 😊\n\nWhat do you reckon? Am I onto something here? 😅\n\n${hashtags}`;
       break;
+      
+    default:
+      styledCaption = originalCaption;
   }
   
   setGeneratedCaption(styledCaption);
