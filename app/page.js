@@ -441,29 +441,63 @@ export default function Home() {
     return humanizeCaption ? humanizeText(randomTemplate + cta + hashtags) : randomTemplate + cta + hashtags;
   };
 
-  const applyCaptionStyle = (styleType) => {
-    if (!originalCaption) return;
-    
-    let styledCaption = originalCaption;
-    
-    switch (styleType) {
-      case 'minimalist':
-        styledCaption = originalCaption.replace(/[🎉🎊✨🔥💯⭐🐊👇]/g, '').replace(/\n\n+/g, '\n\n').trim();
-        break;
-      case 'emoji-heavy':
-        styledCaption = originalCaption.replace(/\./g, '. ✨').replace(/!/g, '! 🔥');
-        break;
-      case 'professional':
-        styledCaption = originalCaption.replace(/[🎉🎊✨🔥💯🐊👇]/g, '').replace(/G'day!/g, 'Hello,').replace(/bonkers/g, 'effective');
-        break;
-      case 'listicle':
-        const parts = originalCaption.split('\n\n');
-        styledCaption = `Here's what you need to know:\n\n1. ${parts[0]}\n2. ${parts[1] || 'More insights coming!'}\n\n${parts[2] || ''}`;
-        break;
-    }
-    
-    setGeneratedCaption(styledCaption);
-  };
+const applyCaptionStyle = (styleType) => {
+  if (!originalCaption) return;
+  
+  let styledCaption = originalCaption;
+  
+  switch (styleType) {
+    case 'minimalist':
+      styledCaption = originalCaption.replace(/[🎉🎊✨🔥💯⭐🐊👇💫🌟🎯🚀⭐]/g, '').replace(/\n\n+/g, '\n\n').trim();
+      break;
+    case 'emoji-heavy':
+      styledCaption = originalCaption.replace(/\./g, '. ✨').replace(/!/g, '! 🔥').replace(/\?/g, '? 💭');
+      break;
+    case 'professional':
+      styledCaption = originalCaption
+        .replace(/[🎉🎊✨🔥💯🐊👇💫🌟🎯🚀⭐]/g, '')
+        .replace(/G'day!/g, 'Hello,')
+        .replace(/Crikey!/g, 'Remarkably,')
+        .replace(/bonkers/g, 'effective')
+        .replace(/amazing/g, 'impressive')
+        .replace(/What do you think\?/g, 'I welcome your thoughts on this.')
+        .replace(/Drop your thoughts below!/g, 'Please share your insights.');
+      break;
+    case 'listicle':
+      const parts = originalCaption.split('\n\n');
+      const mainContent = parts[0];
+      const cta = parts[1] || 'What do you think?';
+      const hashtags = parts[2] || '';
+      styledCaption = `Here's what you need to know:\n\n1. ${mainContent}\n2. This approach delivers real results\n3. Perfect for getting started\n\n${cta}\n\n${hashtags}`;
+      break;
+    case 'story':
+      styledCaption = originalCaption
+        .replace(/Just discovered/, '🌅 This morning I discovered')
+        .replace(/Been exploring/, '📚 I\'ve been exploring')
+        .replace(/Can't stop thinking/, '💭 I can\'t stop thinking');
+      break;
+    case 'question':
+      const questionStarters = ['🤔 Ever wondered about', '💡 What if', '❓ Have you considered'];
+      const randomStarter = questionStarters[Math.floor(Math.random() * questionStarters.length)];
+      styledCaption = `${randomStarter} ${topic}?\n\n${originalCaption.split('\n\n').slice(1).join('\n\n')}`;
+      break;
+    case 'urgent':
+      styledCaption = originalCaption
+        .replace(/!/g, '! 🚨')
+        .replace(/\./g, '. ⏰')
+        .replace(/What do you think\?/g, 'Don\'t wait - what do you think? 🔥');
+      break;
+    case 'casual':
+      styledCaption = originalCaption
+        .replace(/This approach/g, 'This thing')
+        .replace(/perspective/g, 'take')
+        .replace(/absolutely/g, 'totally')
+        .replace(/What do you think\?/g, 'What do you reckon? 😊');
+      break;
+  }
+  
+  setGeneratedCaption(styledCaption);
+};
 
   const saveCaption = async () => {
     if (!user || !generatedCaption) return;
