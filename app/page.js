@@ -113,29 +113,13 @@ export default function Home() {
     return false;
   };
 
- /* const canUseAI = () => {
+  const canUseAI = () => {
     if (userPlan === 'pro') return true;
     if (userPlan === 'credits' && aiCredits > 0) return true;
     if (userPlan === 'free' && aiCredits > 0) return true;
     return false;
- // };*/
-  const canUseAI = () => {
-  if (userPlan === 'pro') {
-    return monthlyUsage < currentLimits.aiCredits; // Check monthly limit
-  }
-  if (userPlan === 'credits' && aiCredits > 0) return true;
-  if (userPlan === 'free' && aiCredits > 0) return true;
-  return false;
-};
-
-const canGenerateCaption = () => {
-  if (userPlan === 'pro') {
-    return monthlyUsage < currentLimits.aiCredits; // Check monthly limit
-  }
-  if (userPlan === 'credits' && aiCredits > 0) return true;
-  if (userPlan === 'free' && aiCredits > 0) return true;
-  return false;
-};
+  };
+  
 
   const canAddFavourite = () => {
     if (userPlan === 'pro') return true;
