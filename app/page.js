@@ -26,6 +26,7 @@ export default function Home() {
   // Subscription & Credits State
   const [userPlan, setUserPlan] = useState('free'); // 'free', 'pro', 'credits'
   const [aiCredits, setAiCredits] = useState(5); // AI credits remaining
+  const [monthlyUsage, setMonthlyUsage] = useState(0); // AI captions used this month
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
   // Features State
@@ -112,12 +113,29 @@ export default function Home() {
     return false;
   };
 
-  const canUseAI = () => {
+ /* const canUseAI = () => {
     if (userPlan === 'pro') return true;
     if (userPlan === 'credits' && aiCredits > 0) return true;
     if (userPlan === 'free' && aiCredits > 0) return true;
     return false;
-  };
+ // };*/
+  const canUseAI = () => {
+  if (userPlan === 'pro') {
+    return monthlyUsage < currentLimits.aiCredits; // Check monthly limit
+  }
+  if (userPlan === 'credits' && aiCredits > 0) return true;
+  if (userPlan === 'free' && aiCredits > 0) return true;
+  return false;
+};
+
+const canGenerateCaption = () => {
+  if (userPlan === 'pro') {
+    return monthlyUsage < currentLimits.aiCredits; // Check monthly limit
+  }
+  if (userPlan === 'credits' && aiCredits > 0) return true;
+  if (userPlan === 'free' && aiCredits > 0) return true;
+  return false;
+};
 
   const canAddFavourite = () => {
     if (userPlan === 'pro') return true;
