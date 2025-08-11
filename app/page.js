@@ -41,29 +41,30 @@ export default function Home() {
 
   // Subscription Configuration
   const subscriptionLimits = {
-    free: {
-      aiCredits: 5, // One-time AI credits for new users
-      templateCaptions: 'unlimited', // Template-based fallbacks
-      platforms: ['Instagram', 'Facebook', 'TikTok'],
-      tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
-      maxFavourites: 10,
-      features: ['AI Taste Test', 'Template Captions', 'Character Guides']
-    },
-    pro: {
-      aiCredits: 'unlimited',
-      platforms: ['Instagram', 'Facebook', 'TikTok', 'Twitter/X', 'LinkedIn', 'Etsy'],
-      tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly', 'edgy', 'witty', 'viral-optimised'],
-      maxFavourites: Infinity,
-      features: ['Unlimited AI', 'Caption Styling', 'All Platforms', 'Premium Tones', 'Instant Tweaking', '24hr Support']
-    },
-    credits: {
-      aiCredits: 50, // 50 AI credits purchased
-      platforms: ['Instagram', 'Facebook', 'TikTok'],
-      tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
-      maxFavourites: 10,
-      features: ['No Subscription', 'AI Credits', 'Free Platforms Only']
-    }
-  };
+  free: {
+    aiCredits: 5, // One-time AI credits for new users
+    templateCaptions: 'unlimited', // Template-based fallbacks
+    platforms: ['Instagram', 'Facebook', 'TikTok'],
+    tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
+    maxFavourites: 10,
+    features: ['AI Taste Test', 'Template Captions', 'Character Guides']
+  },
+  pro: {
+    aiCredits: 500, // 500 AI captions per month
+    monthlyLimit: true, // Resets monthly
+    platforms: ['Instagram', 'Facebook', 'TikTok', 'Twitter/X', 'LinkedIn', 'Etsy'],
+    tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly', 'edgy', 'witty', 'viral-optimised'],
+    maxFavourites: Infinity,
+    features: ['500 AI captions/month', 'Caption Styling', 'All Platforms', 'Premium Tones', 'Instant Tweaking', '24hr Support']
+  },
+  credits: {
+    aiCredits: 50, // 50 AI credits purchased
+    platforms: ['Instagram', 'Facebook', 'TikTok'],
+    tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
+    maxFavourites: 10,
+    features: ['No Subscription', 'AI Credits', 'Free Platforms Only']
+  }
+};
 
   const platforms = [
     { name: 'Instagram', limit: 2200, icon: Instagram, free: true },
