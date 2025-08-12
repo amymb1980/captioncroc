@@ -116,11 +116,13 @@ export default function Home() {
 };
 
 const canUseAI = () => {
-    if (userPlan === 'pro') return true;
-    if (userPlan === 'credits' && aiCredits > 0) return true;
-    if (userPlan === 'free' && aiCredits > 0) return true;
-    return false;
-  };
+  if (userPlan === 'pro') {
+    return monthlyUsage < currentLimits.aiCredits; // Check monthly limit
+  }
+  if (userPlan === 'credits' && aiCredits > 0) return true;
+  if (userPlan === 'free' && aiCredits > 0) return true;
+  return false;
+};
 
   
 
