@@ -198,7 +198,7 @@ const canUseAI = () => {
     }
   };
 
-   const loadUserProfile = async (userId) => {
+ /*  const loadUserProfile = async (userId) => {
      console.log('🔍 Loading profile for user:', userId);
     const { data, error } = await supabase
       .from('user_profiles')
@@ -227,7 +227,54 @@ const canUseAI = () => {
         setUserPlan('free');
       }
     }
-  };
+  };*/
+  const loadUserProfile = async (userId) => {
+  console.log('🔍 Loading profile for user:', userId);
+  
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('ai_credits, plan, monthly_usage, usage_reset_date')
+    .eq('id', userId)
+    .single();
+
+  console.log('🔍 Profile data:', data, 'Error:', error);
+
+  if (!error && data) {
+    console.log('✅ Setting credits to:', data.ai_credits, 'plan to:', data.plan);
+    setAiCredits(data.ai_credits);
+    setUserPlan(data.plan);
+    
+    // Check if we need to reset monthly usage
+    const resetDate = new Date(data.usage_reset_date);
+    const now = new Date();
+    const daysDiff = (now - resetDate) / (1000 * 60 * 60 * 24);
+    
+    if (daysDiff >= 30) {
+      // Reset monthly usage if it's been 30+ days
+      setMonthlyUsage(0);
+      updateMonthlyUsage(0, true); // Reset in database
+    } else {
+      setMonthlyUsage(data.monthly_usage || 0);
+    }
+  } else {
+    console.log('⚠️ Creating new profile...');
+    const { error: insertError } = await supabase
+      .from('user_profiles')
+      .insert([{
+        id: userId,
+        ai_credits: 5,
+        plan: 'free',
+        monthly_usage: 0,
+        usage_reset_date: new Date().toISOString()
+      }]);
+    
+    if (!insertError) {
+      setAiCredits(5);
+      setUserPlan('free');
+      setMonthlyUsage(0);
+    }
+  }
+};
 
   const updateUserCredits = async (newCredits) => {
     console.log('🔥 updateUserCredits called with:', newCredits);
