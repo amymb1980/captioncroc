@@ -436,15 +436,12 @@ const canUseAI = () => {
             isAIGenerated = true;
             
             // Deduct AI credit
-           /* if (userPlan === 'free' || userPlan === 'credits') {
-              updateUserCredits(aiCredits - 1);
-            }*/
-            if (userPlan === 'free' || userPlan === 'credits') {
-  updateUserCredits(aiCredits - 1);
-} else if (userPlan === 'pro') {
-  // For Pro users, track monthly usage instead
-  updateMonthlyUsage(monthlyUsage + 1);
-}
+          if (userPlan === 'free' || userPlan === 'credits') {
+            updateUserCredits(aiCredits - 1);
+          } else if (userPlan === 'pro') {
+          // For Pro users, track monthly usage instead
+            updateMonthlyUsage(monthlyUsage + 1);
+          }
             
          
           
