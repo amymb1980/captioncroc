@@ -198,36 +198,6 @@ const canUseAI = () => {
     }
   };
 
- /*  const loadUserProfile = async (userId) => {
-     console.log('🔍 Loading profile for user:', userId);
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('ai_credits, plan')
-      .eq('id', userId)
-      .single();
-     console.log('🔍 Profile data:', data, 'Error:', error);
-
-    if (!error && data) {
-      console.log('✅ Setting credits to:', data.ai_credits, 'plan to:', data.plan);
-      setAiCredits(data.ai_credits);
-      setUserPlan(data.plan);
-    } else {
-      console.log('⚠️ Creating new profile...');
-      // Create profile if it doesn't exist (for existing users)
-      const { error: insertError } = await supabase
-        .from('user_profiles')
-        .insert([{
-          id: userId,
-          ai_credits: 5,
-          plan: 'free'
-        }]);
-      
-      if (!insertError) {
-        setAiCredits(5);
-        setUserPlan('free');
-      }
-    }
-  };*/
   const loadUserProfile = async (userId) => {
   console.log('🔍 Loading profile for user:', userId);
   
@@ -275,6 +245,25 @@ const canUseAI = () => {
     }
   }
 };
+
+  const updateMonthlyUsage = async (newUsage, isReset = false) => {
+  if (!user) return;
+  
+  const updateData = { monthly_usage: newUsage };
+  if (isReset) {
+    updateData.usage_reset_date = new Date().toISOString();
+  }
+  
+  const { error } = await supabase
+    .from('user_profiles')
+    .update(updateData)
+    .eq('id', user.id);
+    
+  if (!error) {
+    setMonthlyUsage(newUsage);
+  }
+};
+
 
   const updateUserCredits = async (newCredits) => {
     console.log('🔥 updateUserCredits called with:', newCredits);
