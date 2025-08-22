@@ -1479,30 +1479,30 @@ const applyCaptionStyle = (styleType) => {
                   </div>
 
                   <button
-                    onClick={generateCaption}
-                    disabled={isGenerating || !topic.trim() || !canGenerateCaption()}
-                    className="w-full text-white py-3 px-6 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                    style={{ background: isGenerating || !topic.trim() || !canGenerateCaption() ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
-                  >
-                    {isGenerating ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                    Generating with AI...
-                    </>
-                    ) : !canGenerateCaption() ? (
-                    <>
-                    <Lock size={16} />
-                      {userPlan === 'pro' && monthlyUsage >= currentLimits.aiCredits ? 'Monthly Limit Reached' :
-                      userPlan === 'free' && aiCredits === 0 ? 'AI Credits Used - Template Mode' : 
-                      userPlan === 'credits' ? 'No Credits Left' : 'Upgrade Required'}
-                      </>
-                    ) : (
-                    <>
-                    <Sparkles size={16} />
-                    Generate Caption
-                    </>
-                      )}
-                  </button>
+  onClick={generateCaption}
+  disabled={isGenerating || !topic.trim() || !canGenerateCaption()}
+  className="w-full text-white py-3 px-6 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+  style={{ background: isGenerating || !topic.trim() || !canGenerateCaption() ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
+>
+  {isGenerating ? (
+    <>
+      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+      Generating with AI...
+    </>
+  ) : !canGenerateCaption() ? (
+    <>
+      <Lock size={16} />
+      {userPlan === 'pro' && monthlyUsage >= currentLimits.aiCredits ? 'Monthly Limit Reached' :
+       userPlan === 'free' && aiCredits === 0 ? 'AI Credits Used - Template Mode' : 
+       userPlan === 'credits' ? 'No Credits Left' : 'Upgrade Required'}
+    </>
+  ) : (
+    <>
+      <Sparkles size={16} />
+      Generate Caption
+    </>
+  )}
+</button>
                 </div>
 
                 <div className="space-y-4">
