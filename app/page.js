@@ -1466,21 +1466,23 @@ const applyCaptionStyle = (styleType) => {
                     style={{ background: isGenerating || !topic.trim() || !canGenerateCaption() ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
                   >
                     {isGenerating ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                        Generating with AI...
-                      </>
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    Generating with AI...
+                    </>
                     ) : !canGenerateCaption() ? (
-                      <>
-                        <Lock size={16} />
-                        {userPlan === 'free' && aiCredits === 0 ? 'AI Credits Used - Template Mode' : userPlan === 'credits' ? 'No Credits Left' : 'Upgrade Required'}
+                    <>
+                    <Lock size={16} />
+                      {userPlan === 'pro' && monthlyUsage >= currentLimits.aiCredits ? 'Monthly Limit Reached' :
+                      userPlan === 'free' && aiCredits === 0 ? 'AI Credits Used - Template Mode' : 
+                      userPlan === 'credits' ? 'No Credits Left' : 'Upgrade Required'}
                       </>
                     ) : (
-                      <>
-                        <Sparkles size={16} />
-                        Generate Caption
-                      </>
-                    )}
+                    <>
+                    <Sparkles size={16} />
+                    Generate Caption
+                    </>
+                      )}
                   </button>
                 </div>
 
