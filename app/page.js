@@ -1235,25 +1235,36 @@ const applyCaptionStyle = (styleType) => {
             <p className="text-gray-600 text-lg">Snappy captions that bite!</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <div className={`rounded-lg p-4 ${userPlan === 'pro' ? 'bg-gradient-to-r from-teal-50 to-orange-50' : 'bg-gray-50'}`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {userPlan === 'pro' ? <Crown size={20} className="text-yellow-500" /> : <BarChart3 size={20} className="text-teal-600" />}
-                  <span className="font-medium text-gray-800">
-                    {userPlan === 'pro' ? 'Pro Croc' : userPlan === 'credits' ? 'Credit Pack' : 'Free Plan'}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-800">
-                    {userPlan === 'pro' ? '∞' : aiCredits}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {userPlan === 'pro' ? 'unlimited AI' : 'AI credits left'}
-                  </div>
-                </div>
-              </div>
-            </div>
+         <div className="grid md:grid-cols-2 gap-4 mb-6">
+         <div className={`rounded-lg p-4 ${userPlan === 'pro' ? 'bg-gradient-to-r from-teal-50 to-orange-50' : 'bg-gray-50'}`}>
+         <div className="flex items-center justify-between">
+         <div className="flex items-center gap-2">
+            {userPlan === 'pro' ? <Crown size={20} className="text-yellow-500" /> : <BarChart3 size={20} className="text-teal-600" />}
+              <span className="font-medium text-gray-800">
+                {userPlan === 'pro' ? 'Pro Croc' : userPlan === 'credits' ? 'Credit Pack' : 'Free Plan'}
+              </span>
+        </div>
+      <div className="text-right">
+        <div className="text-2xl font-bold text-gray-800">
+          {userPlan === 'pro' ? `${monthlyUsage}/${currentLimits.aiCredits}` : userPlan === 'pro' ? '∞' : aiCredits}
+        </div>
+        <div className="text-sm text-gray-600">
+          {userPlan === 'pro' ? 'AI captions this month' : userPlan === 'pro' ? 'unlimited AI' : 'AI credits left'}
+        </div>
+      </div>
+    </div>
+    {userPlan === 'pro' && (
+      <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+        <div 
+          className="h-2 rounded-full transition-all"
+          style={{ 
+            width: `${(monthlyUsage / currentLimits.aiCredits) * 100}%`,
+            background: monthlyUsage > currentLimits.aiCredits * 0.8 ? 'linear-gradient(135deg, #EA8953, #DC2626)' : 'linear-gradient(135deg, #EA8953, #007B40)'
+          }}
+        ></div>
+      </div>
+    )}
+  </div>
 
             <div className="bg-orange-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
