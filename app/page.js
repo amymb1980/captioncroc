@@ -873,7 +873,8 @@ const applyCaptionStyle = (styleType) => {
                   <p className="text-sm text-gray-500 mt-1">Cancel anytime • 24hr support</p>
                 </div>
                 <ul className="space-y-2 text-sm mb-6">
-                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>Unlimited captions</strong></li>
+                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>500 AI captions/month</strong></li>
+                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>Unlimited templates</strong></li>
                   <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>All 6 platforms</strong> + character guides</li>
                   <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>13 tone options</strong> (including Premium)</li>
                   <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>8 styling options</strong></li>
