@@ -1349,6 +1349,24 @@ const applyCaptionStyle = (styleType) => {
                   </div>
                 </div>
               </div>
+           
+          {userPlan === 'pro' && monthlyUsage > currentLimits.aiCredits * 0.8 && (
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+            <AlertCircle className="text-orange-600 mt-0.5" size={20} />
+            <div>
+              <h3 className="font-medium text-orange-800 mb-1">⚠️ Monthly Limit Warning</h3>
+              <p className="text-sm text-orange-700">
+                You've used {monthlyUsage} of your {currentLimits.aiCredits} monthly AI captions. 
+                  {monthlyUsage >= currentLimits.aiCredits ? 
+                  ' You can still generate unlimited template captions!' : 
+                  ` ${currentLimits.aiCredits - monthlyUsage} AI captions remaining this month.`
+                  }
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-6">
