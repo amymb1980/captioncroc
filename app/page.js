@@ -730,6 +730,26 @@ const applyCaptionStyle = (styleType) => {
     );
   }
 
+    const manualUpgradeUser = async (userId, newPlan) => {
+      // This function is for you to use in Supabase SQL Editor after receiving payment
+      
+      const updateData = { plan: newPlan };
+      
+      if (newPlan === 'pro') {
+        updateData.monthly_usage = 0;
+        updateData.usage_reset_date = new Date().toISOString();
+      } else if (newPlan === 'credits') {
+        updateData.ai_credits = 50; // Add 50 credits
+      }
+      
+      const { error } = await supabase
+        .from('user_profiles')
+        .update(updateData)
+        .eq('id', userId);
+        
+      return !error;
+    };
+
   const AuthModal = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
