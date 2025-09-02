@@ -28,6 +28,8 @@ export default function Home() {
   const [aiCredits, setAiCredits] = useState(5); // AI credits remaining
   const [monthlyUsage, setMonthlyUsage] = useState(0); // AI captions used this month
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [upgradeType, setUpgradeType] = useState(''); // 'pro' or 'credits'
   
   // Features State
   const [exportWebhook, setExportWebhook] = useState('');
@@ -833,6 +835,109 @@ const applyCaptionStyle = (styleType) => {
       </div>
     );
   };
+
+const ContactModal = () => {
+  const [email, setEmail] = useState(user?.email || '');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+
+  if (!showContactModal) return null;
+
+  const handleSubmit = async () => {
+    setSending(true);
+    
+    try {
+      // Save upgrade request to database
+      const { error } = await supabase
+        .from('upgrade_requests')
+        .insert([{
+          user_id: user.id,
+          user_email: email,
+          upgrade_type: upgradeType,
+          message: message,
+          current_plan: userPlan,
+          created_at: new Date().toISOString()
+        }]);
+
+      if (!error) {
+        alert(`✅ Request sent! We'll contact you within 24 hours to set up your ${upgradeType === 'pro' ? 'Pro Croc subscription' : 'Credit Pack'}.`);
+        setShowContactModal(false);
+        setMessage('');
+      } else {
+        console.error('Error saving request:', error);
+        alert('❌ Error sending request. Please email us directly at hello@captioncroc.com');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error sending request. Please email us directly at hello@captioncroc.com');
+    }
+    
+    setSending(false);
+  };
+
+  const planDetails = upgradeType === 'pro' 
+    ? { name: 'Pro Croc', price: '$9/month', features: '500 AI captions/month + all Pro features' }
+    : { name: 'Credit Pack', price: '$5 one-time', features: '50 AI caption credits' };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-md w-full">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-800">
+              Upgrade to {planDetails.name}
+            </h2>
+            <button onClick={() => setShowContactModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+          </div>
+
+          <div className="bg-teal-50 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-teal-800 mb-1">{planDetails.name} - {planDetails.price}</h3>
+            <p className="text-sm text-teal-700">{planDetails.features}</p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ '--tw-ring-color': '#007B40' }}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Message (Optional)</label>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Any questions or special requirements?"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent h-20 resize-none"
+                style={{ '--tw-ring-color': '#007B40' }}
+              />
+            </div>
+            
+            <button
+              onClick={handleSubmit}
+              disabled={sending || !email.trim()}
+              className="w-full text-white py-3 px-4 rounded-lg font-medium disabled:opacity-50 transition-all"
+              style={{ background: sending || !email.trim() ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
+            >
+              {sending ? 'Sending...' : `Request ${planDetails.name} Upgrade`}
+            </button>
+          </div>
+
+          <div className="mt-4 text-center">
+            <p className="text-xs text-gray-500">
+              We'll send you a secure payment link via email within 24 hours.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
   const UpgradeModal = () => (
     showUpgradeModal && (
