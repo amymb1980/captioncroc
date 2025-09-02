@@ -1865,6 +1865,7 @@ const ContactModal = () => {
 
       <UpgradeModal />
       <AuthModal />
+      <ContactModal />
     </div>
   );
 }
