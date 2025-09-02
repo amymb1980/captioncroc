@@ -987,10 +987,14 @@ const ContactModal = () => {
                   <li className="flex items-center gap-2"><Heart size={16} className="text-orange-500" /> <strong>24hr human support</strong></li>
                 </ul>
                 <button 
-                  onClick={() => {updateUserPlan('pro'); setShowUpgradeModal(false);}}
+                  onClick={() => {
+                    setUpgradeType('pro');
+                    setShowUpgradeModal(false);
+                    setShowContactModal(true);
+                  }}
                   className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-teal-700 transition-colors"
                 >
-                  Upgrade to Pro Croc - $9/month
+                  Request Pro Upgrade - $9/month
                 </button>
               </div>
 
