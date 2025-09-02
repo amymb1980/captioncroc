@@ -1013,10 +1013,14 @@ const ContactModal = () => {
                   <li className="flex items-center gap-2"><Lock size={16} className="text-gray-400" /> No styling options</li>
                 </ul>
                 <button 
-                  onClick={() => {updateUserPlan('credits'); setShowUpgradeModal(false);}}
-                  className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors"
+                  onClick={() => {
+                    setUpgradeType('credits');
+                    setShowUpgradeModal(false);
+                    setShowContactModal(true);
+                  }}
+                  className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors"
                 >
-                  Buy Credit Pack - $5
+                  Request Credit Pack - $5
                 </button>
               </div>
             </div>
