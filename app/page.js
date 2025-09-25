@@ -26,7 +26,10 @@ export default function Home() {
   // Subscription & Credits State
   const [userPlan, setUserPlan] = useState('free'); // 'free', 'pro', 'credits'
   const [aiCredits, setAiCredits] = useState(5); // AI credits remaining
+  const [monthlyUsage, setMonthlyUsage] = useState(0); // AI captions used this month
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [upgradeType, setUpgradeType] = useState(''); // 'pro' or 'credits'
   
   // Features State
   const [exportWebhook, setExportWebhook] = useState('');
@@ -41,29 +44,30 @@ export default function Home() {
 
   // Subscription Configuration
   const subscriptionLimits = {
-    free: {
-      aiCredits: 5, // One-time AI credits for new users
-      templateCaptions: 'unlimited', // Template-based fallbacks
-      platforms: ['Instagram', 'Facebook', 'TikTok'],
-      tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
-      maxFavourites: 10,
-      features: ['AI Taste Test', 'Template Captions', 'Character Guides']
-    },
-    pro: {
-      aiCredits: 'unlimited',
-      platforms: ['Instagram', 'Facebook', 'TikTok', 'Twitter/X', 'LinkedIn', 'Etsy'],
-      tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly', 'edgy', 'witty', 'viral-optimised'],
-      maxFavourites: Infinity,
-      features: ['Unlimited AI', 'Caption Styling', 'All Platforms', 'Premium Tones', 'Instant Tweaking', '24hr Support']
-    },
-    credits: {
-      aiCredits: 50, // 50 AI credits purchased
-      platforms: ['Instagram', 'Facebook', 'TikTok'],
-      tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
-      maxFavourites: 10,
-      features: ['No Subscription', 'AI Credits', 'Free Platforms Only']
-    }
-  };
+  free: {
+    aiCredits: 5, // One-time AI credits for new users
+    templateCaptions: 'unlimited', // Template-based fallbacks
+    platforms: ['Instagram', 'Facebook', 'TikTok'],
+    tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
+    maxFavourites: 10,
+    features: ['AI Taste Test', 'Template Captions', 'Character Guides']
+  },
+  pro: {
+    aiCredits: 500, // 500 AI captions per month
+    monthlyLimit: true, // Resets monthly
+    platforms: ['Instagram', 'Facebook', 'TikTok', 'Twitter/X', 'LinkedIn', 'Etsy'],
+    tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly', 'edgy', 'witty', 'viral-optimised'],
+    maxFavourites: Infinity,
+    features: ['500 AI captions/month', 'Caption Styling', 'All Platforms', 'Premium Tones', 'Instant Tweaking', '24hr Support']
+  },
+  credits: {
+    aiCredits: 50, // 50 AI credits purchased
+    platforms: ['Instagram', 'Facebook', 'TikTok'],
+    tones: ['casual', 'professional', 'humorous', 'inspirational', 'educational', 'conversational', 'formal', 'playful', 'motivational', 'friendly'],
+    maxFavourites: 10,
+    features: ['No Subscription', 'AI Credits', 'Free Platforms Only']
+  }
+};
 
   const platforms = [
     { name: 'Instagram', limit: 2200, icon: Instagram, free: true },
@@ -105,18 +109,24 @@ export default function Home() {
   };
 
   const canGenerateCaption = () => {
-    if (userPlan === 'pro') return true;
-    if (userPlan === 'credits' && aiCredits > 0) return true;
-    if (userPlan === 'free' && aiCredits > 0) return true;
-    return false;
-  };
+  if (userPlan === 'pro') {
+    return monthlyUsage < currentLimits.aiCredits; // Check monthly limit
+  }
+  if (userPlan === 'credits' && aiCredits > 0) return true;
+  if (userPlan === 'free' && aiCredits > 0) return true;
+  return false;
+};
+    
+const canUseAI = () => {
+  if (userPlan === 'pro') {
+    return monthlyUsage < currentLimits.aiCredits; // Check monthly limit
+  }
+  if (userPlan === 'credits' && aiCredits > 0) return true;
+  if (userPlan === 'free' && aiCredits > 0) return true;
+  return false;
+};
 
-  const canUseAI = () => {
-    if (userPlan === 'pro') return true;
-    if (userPlan === 'credits' && aiCredits > 0) return true;
-    if (userPlan === 'free' && aiCredits > 0) return true;
-    return false;
-  };
+  
 
   const canAddFavourite = () => {
     if (userPlan === 'pro') return true;
@@ -159,7 +169,13 @@ export default function Home() {
       if (session?.user) {
         setUser(session.user);
         setShowLandingPage(false);
-        setTimeout(() => loadCaptions(session.user.id), 0);
+        loadUserProfile(session.user.id);
+
+        setTimeout(() => {
+          loadCaptions(session.user.id);
+          loadUserProfile(session.user.id);  // ADD THIS LINE
+      }, 0);
+        //setTimeout(() => loadCaptions(session.user.id), 0);
       } else {
         setUser(null);
         setShowLandingPage(true);
@@ -183,6 +199,158 @@ export default function Home() {
       setSavedCaptions(data || []);
     }
   };
+
+  const loadUserProfile = async (userId) => {
+  console.log('🔍 Loading profile for user:', userId);
+  
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('ai_credits, plan, monthly_usage, usage_reset_date')
+    .eq('id', userId)
+    .single();
+
+  console.log('🔍 Profile data:', data, 'Error:', error);
+
+  if (!error && data) {
+    console.log('✅ Setting credits to:', data.ai_credits, 'plan to:', data.plan);
+    setAiCredits(data.ai_credits);
+    setUserPlan(data.plan);
+    
+    // Check if we need to reset monthly usage
+    const resetDate = new Date(data.usage_reset_date);
+    const now = new Date();
+    const daysDiff = (now - resetDate) / (1000 * 60 * 60 * 24);
+    
+    if (daysDiff >= 30) {
+      // Reset monthly usage if it's been 30+ days
+      setMonthlyUsage(0);
+      updateMonthlyUsage(0, true); // Reset in database
+    } else {
+      setMonthlyUsage(data.monthly_usage || 0);
+    }
+  } else {
+    console.log('⚠️ Creating new profile...');
+    const { error: insertError } = await supabase
+      .from('user_profiles')
+      .insert([{
+        id: userId,
+        ai_credits: 5,
+        plan: 'free',
+        monthly_usage: 0,
+        usage_reset_date: new Date().toISOString()
+      }]);
+    
+    if (!insertError) {
+      setAiCredits(5);
+      setUserPlan('free');
+      setMonthlyUsage(0);
+    }
+  }
+};
+
+  const updateMonthlyUsage = async (newUsage, isReset = false) => {
+  if (!user) return;
+  
+  const updateData = { monthly_usage: newUsage };
+  if (isReset) {
+    updateData.usage_reset_date = new Date().toISOString();
+  }
+  
+  const { error } = await supabase
+    .from('user_profiles')
+    .update(updateData)
+    .eq('id', user.id);
+    
+  if (!error) {
+    setMonthlyUsage(newUsage);
+  }
+};
+
+
+  const updateUserCredits = async (newCredits) => {
+    console.log('🔥 updateUserCredits called with:', newCredits);
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ ai_credits: newCredits })
+      .eq('id', user.id);
+      
+    if (!error) {
+      console.error('❌ Database update failed:', error);
+      setAiCredits(newCredits);
+    }
+  };
+
+  const updateUserPlan = async (newPlan) => {
+    if (!user) return;
+    
+    let newCredits = aiCredits;
+    if (newPlan === 'credits') {
+      newCredits = aiCredits + 50;
+    }
+    
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ 
+        plan: newPlan,
+        ai_credits: newCredits
+      })
+      .eq('id', user.id);
+      
+    if (!error) {
+      setUserPlan(newPlan);
+      setAiCredits(newCredits);
+    }
+  };
+  const selectVariation = (index) => {
+    setSelectedVariation(index);
+    setGeneratedCaption(captionVariations[index]);
+    setOriginalCaption(captionVariations[index]);
+  };
+
+  const StylingPanel = () => {
+  if (userPlan !== 'pro' || !generatedCaption) return null;
+
+  const styles = [
+    { id: 'minimalist', name: 'Minimalist', desc: 'Clean, emoji-free', icon: '🎯' },
+    { id: 'emoji-heavy', name: 'Emoji Heavy', desc: 'Extra emojis', icon: '😍' },
+    { id: 'professional', name: 'Professional', desc: 'Business tone', icon: '💼' },
+    { id: 'listicle', name: 'Listicle', desc: 'Numbered points', icon: '📝' },
+    { id: 'story', name: 'Storytelling', desc: 'Narrative style', icon: '📖' },
+    { id: 'question', name: 'Question Hook', desc: 'Engaging questions', icon: '❓' },
+    { id: 'urgent', name: 'Urgent', desc: 'Action-focused', icon: '🚨' },
+    { id: 'casual', name: 'Casual', desc: 'Relaxed tone', icon: '😊' }
+  ];
+
+  return (
+    <div className="mt-4 p-4 bg-gradient-to-r from-teal-50 to-orange-50 border border-teal-200 rounded-lg">
+      <div className="flex items-center gap-2 mb-3">
+        <Crown className="text-yellow-500" size={16} />
+        <h4 className="font-semibold text-gray-800">Pro Styling Options</h4>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        {styles.map((style) => (
+          <button
+            key={style.id}
+            onClick={() => applyCaptionStyle(style.id)}
+            className="p-2 text-left border border-gray-200 rounded-lg hover:border-teal-300 hover:bg-white transition-colors bg-white/50"
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">{style.icon}</span>
+              <span className="font-medium text-sm text-gray-800">{style.name}</span>
+            </div>
+            <div className="text-xs text-gray-600">{style.desc}</div>
+          </button>
+        ))}
+      </div>
+      <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-700">
+        💡 Tip: Apply styling after selecting your preferred variation
+      </div>
+    </div>
+  );
+};
+
 
   const handleAuth = async (email, password, mode) => {
     setAuthLoading(true);
@@ -270,9 +438,16 @@ export default function Home() {
             isAIGenerated = true;
             
             // Deduct AI credit
-            if (userPlan === 'free' || userPlan === 'credits') {
-              setAiCredits(prev => prev - 1);
-            }
+          if (userPlan === 'free' || userPlan === 'credits') {
+            updateUserCredits(aiCredits - 1);
+          } else if (userPlan === 'pro') {
+          // For Pro users, track monthly usage instead
+            updateMonthlyUsage(monthlyUsage + 1);
+          }
+            
+         
+          
+            
           } else {
             throw new Error('AI generation failed');
           }
@@ -362,29 +537,61 @@ export default function Home() {
     return humanizeCaption ? humanizeText(randomTemplate + cta + hashtags) : randomTemplate + cta + hashtags;
   };
 
-  const applyCaptionStyle = (styleType) => {
-    if (!originalCaption) return;
-    
-    let styledCaption = originalCaption;
-    
-    switch (styleType) {
-      case 'minimalist':
-        styledCaption = originalCaption.replace(/[🎉🎊✨🔥💯⭐🐊👇]/g, '').replace(/\n\n+/g, '\n\n').trim();
-        break;
-      case 'emoji-heavy':
-        styledCaption = originalCaption.replace(/\./g, '. ✨').replace(/!/g, '! 🔥');
-        break;
-      case 'professional':
-        styledCaption = originalCaption.replace(/[🎉🎊✨🔥💯🐊👇]/g, '').replace(/G'day!/g, 'Hello,').replace(/bonkers/g, 'effective');
-        break;
-      case 'listicle':
-        const parts = originalCaption.split('\n\n');
-        styledCaption = `Here's what you need to know:\n\n1. ${parts[0]}\n2. ${parts[1] || 'More insights coming!'}\n\n${parts[2] || ''}`;
-        break;
-    }
-    
-    setGeneratedCaption(styledCaption);
-  };
+const applyCaptionStyle = (styleType) => {
+  if (!originalCaption) return;
+  
+  let styledCaption = originalCaption;
+  
+  // Split the caption into parts (main content, CTA, hashtags)
+  const parts = originalCaption.split('\n\n');
+  const mainContent = parts[0] || '';
+  const cta = parts[1] || 'What do you think?';
+  const hashtags = parts[2] || '';
+  
+  switch (styleType) {
+    case 'minimalist':
+      styledCaption = originalCaption.replace(/[🎉🎊✨🔥💯⭐🐊👇💫🌟🎯🚀⭐]/g, '').replace(/\n\n+/g, '\n\n').trim();
+      break;
+      
+    case 'emoji-heavy':
+      styledCaption = originalCaption.replace(/\./g, '. ✨').replace(/!/g, '! 🔥').replace(/\?/g, '? 💭');
+      break;
+      
+    case 'professional':
+      styledCaption = originalCaption
+        .replace(/[🎉🎊✨🔥💯🐊👇💫🌟🎯🚀⭐]/g, '')
+        .replace(/amazing/g, 'impressive')
+        .replace(/brilliant/g, 'effective')
+        .replace(/What do you think\?/g, 'I welcome your thoughts on this.')
+        .replace(/Share your thoughts below!/g, 'Please share your insights.');
+      break;
+      
+    case 'listicle':
+      styledCaption = `Here's what you need to know:\n\n1. ${mainContent}\n2. This approach delivers real results\n3. Perfect for getting started\n\n${cta}\n\n${hashtags}`;
+      break;
+      
+    case 'story':
+      styledCaption = `📖 Here's my story...\n\nLast week, I discovered something amazing about ${topic}. ${mainContent}\n\nIt was one of those "aha!" moments that made me realize how much this could impact my work. 💡\n\n${cta}\n\n${hashtags}`;
+      break;
+      
+    case 'question':
+      styledCaption = `🤔 Ever wondered about ${topic}?\n\n${mainContent}\n\nThe answer might surprise you! 🤯\n\nWhat's your take on this? Let me know below! 👇\n\n${hashtags}`;
+      break;
+      
+    case 'urgent':
+      styledCaption = `🚨 URGENT: This changes everything about ${topic}!\n\n⏰ Time-sensitive insight: ${mainContent}\n\n🔥 Don't wait - this opportunity won't last forever!\n\nACT NOW - what's your reaction? 👇\n\n${hashtags}`;
+      break;
+      
+    case 'casual':
+      styledCaption = `Hey there! 👋\n\nSo I was just thinking about ${topic} and honestly? ${mainContent}\n\nLike, seriously - this stuff is pretty cool when you think about it! 😊\n\nWhat do you reckon? Am I onto something here? 😅\n\n${hashtags}`;
+      break;
+      
+    default:
+      styledCaption = originalCaption;
+  }
+  
+  setGeneratedCaption(styledCaption);
+};
 
   const saveCaption = async () => {
     if (!user || !generatedCaption) return;
@@ -523,6 +730,26 @@ export default function Home() {
     );
   }
 
+    const manualUpgradeUser = async (userId, newPlan) => {
+      // This function is for you to use in Supabase SQL Editor after receiving payment
+      
+      const updateData = { plan: newPlan };
+      
+      if (newPlan === 'pro') {
+        updateData.monthly_usage = 0;
+        updateData.usage_reset_date = new Date().toISOString();
+      } else if (newPlan === 'credits') {
+        updateData.ai_credits = 50; // Add 50 credits
+      }
+      
+      const { error } = await supabase
+        .from('user_profiles')
+        .update(updateData)
+        .eq('id', userId);
+        
+      return !error;
+    };
+
   const AuthModal = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -629,6 +856,109 @@ export default function Home() {
     );
   };
 
+const ContactModal = () => {
+  const [email, setEmail] = useState(user?.email || '');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+
+  if (!showContactModal) return null;
+
+  const handleSubmit = async () => {
+    setSending(true);
+    
+    try {
+      // Save upgrade request to database
+      const { error } = await supabase
+        .from('upgrade_requests')
+        .insert([{
+          user_id: user.id,
+          user_email: email,
+          upgrade_type: upgradeType,
+          message: message,
+          current_plan: userPlan,
+          created_at: new Date().toISOString()
+        }]);
+
+      if (!error) {
+        alert(`✅ Request sent! We'll contact you within 24 hours to set up your ${upgradeType === 'pro' ? 'Pro Croc subscription' : 'Credit Pack'}.`);
+        setShowContactModal(false);
+        setMessage('');
+      } else {
+        console.error('Error saving request:', error);
+        alert('❌ Error sending request. Please email us directly at hello@captioncroc.com');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('❌ Error sending request. Please email us directly at hello@captioncroc.com');
+    }
+    
+    setSending(false);
+  };
+
+  const planDetails = upgradeType === 'pro' 
+    ? { name: 'Pro Croc', price: '$9/month', features: '500 AI captions/month + all Pro features' }
+    : { name: 'Credit Pack', price: '$5 one-time', features: '50 AI caption credits' };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-md w-full">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-800">
+              Upgrade to {planDetails.name}
+            </h2>
+            <button onClick={() => setShowContactModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
+          </div>
+
+          <div className="bg-teal-50 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-teal-800 mb-1">{planDetails.name} - {planDetails.price}</h3>
+            <p className="text-sm text-teal-700">{planDetails.features}</p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent"
+                style={{ '--tw-ring-color': '#007B40' }}
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Message (Optional)</label>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Any questions or special requirements?"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent h-20 resize-none"
+                style={{ '--tw-ring-color': '#007B40' }}
+              />
+            </div>
+            
+            <button
+              onClick={handleSubmit}
+              disabled={sending || !email.trim()}
+              className="w-full text-white py-3 px-4 rounded-lg font-medium disabled:opacity-50 transition-all"
+              style={{ background: sending || !email.trim() ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
+            >
+              {sending ? 'Sending...' : `Request ${planDetails.name} Upgrade`}
+            </button>
+          </div>
+
+          <div className="mt-4 text-center">
+            <p className="text-xs text-gray-500">
+              We'll send you a secure payment link via email within 24 hours.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
   const UpgradeModal = () => (
     showUpgradeModal && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -668,7 +998,8 @@ export default function Home() {
                   <p className="text-sm text-gray-500 mt-1">Cancel anytime • 24hr support</p>
                 </div>
                 <ul className="space-y-2 text-sm mb-6">
-                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>Unlimited captions</strong></li>
+                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>500 AI captions/month</strong></li>
+                  <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>Unlimited templates</strong></li>
                   <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>All 6 platforms</strong> + character guides</li>
                   <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>13 tone options</strong> (including Premium)</li>
                   <li className="flex items-center gap-2"><Zap size={16} className="text-green-500" /> <strong>8 styling options</strong></li>
@@ -676,10 +1007,14 @@ export default function Home() {
                   <li className="flex items-center gap-2"><Heart size={16} className="text-orange-500" /> <strong>24hr human support</strong></li>
                 </ul>
                 <button 
-                  onClick={() => {setUserPlan('pro'); setShowUpgradeModal(false);}}
+                  onClick={() => {
+                    setUpgradeType('pro');
+                    setShowUpgradeModal(false);
+                    setShowContactModal(true);
+                  }}
                   className="w-full bg-teal-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-teal-700 transition-colors"
                 >
-                  Upgrade to Pro Croc - $9/month
+                  Request Pro Upgrade - $9/month
                 </button>
               </div>
 
@@ -698,10 +1033,14 @@ export default function Home() {
                   <li className="flex items-center gap-2"><Lock size={16} className="text-gray-400" /> No styling options</li>
                 </ul>
                 <button 
-                  onClick={() => {setUserPlan('credits'); setAiCredits(prev => prev + 50); setShowUpgradeModal(false);}}
-                  className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors"
+                  onClick={() => {
+                    setUpgradeType('credits');
+                    setShowUpgradeModal(false);
+                    setShowContactModal(true);
+                  }}
+                  className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors"
                 >
-                  Buy Credit Pack - $5
+                  Request Credit Pack - $5
                 </button>
               </div>
             </div>
@@ -1030,25 +1369,36 @@ export default function Home() {
             <p className="text-gray-600 text-lg">Snappy captions that bite!</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <div className={`rounded-lg p-4 ${userPlan === 'pro' ? 'bg-gradient-to-r from-teal-50 to-orange-50' : 'bg-gray-50'}`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {userPlan === 'pro' ? <Crown size={20} className="text-yellow-500" /> : <BarChart3 size={20} className="text-teal-600" />}
-                  <span className="font-medium text-gray-800">
-                    {userPlan === 'pro' ? 'Pro Croc' : userPlan === 'credits' ? 'Credit Pack' : 'Free Plan'}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-gray-800">
-                    {userPlan === 'pro' ? '∞' : aiCredits}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {userPlan === 'pro' ? 'unlimited AI' : 'AI credits left'}
-                  </div>
-                </div>
-              </div>
-            </div>
+<div className="grid md:grid-cols-2 gap-4 mb-6">
+  <div className={`rounded-lg p-4 ${userPlan === 'pro' ? 'bg-gradient-to-r from-teal-50 to-orange-50' : 'bg-gray-50'}`}>
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        {userPlan === 'pro' ? <Crown size={20} className="text-yellow-500" /> : <BarChart3 size={20} className="text-teal-600" />}
+        <span className="font-medium text-gray-800">
+          {userPlan === 'pro' ? 'Pro Croc' : userPlan === 'credits' ? 'Credit Pack' : 'Free Plan'}
+        </span>
+      </div>
+      <div className="text-right">
+        <div className="text-2xl font-bold text-gray-800">
+          {userPlan === 'pro' ? `${monthlyUsage}/${currentLimits.aiCredits}` : aiCredits}
+        </div>
+        <div className="text-sm text-gray-600">
+          {userPlan === 'pro' ? 'AI captions this month' : 'AI credits left'}
+        </div>
+      </div>
+    </div>
+    {userPlan === 'pro' && (
+      <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+        <div 
+          className="h-2 rounded-full transition-all"
+          style={{ 
+            width: `${(monthlyUsage / currentLimits.aiCredits) * 100}%`,
+            background: monthlyUsage > currentLimits.aiCredits * 0.8 ? 'linear-gradient(135deg, #EA8953, #DC2626)' : 'linear-gradient(135deg, #EA8953, #007B40)'
+          }}
+        ></div>
+      </div>
+    )}
+  </div>
 
             <div className="bg-orange-50 rounded-lg p-4">
               <div className="flex items-center justify-between">
@@ -1132,6 +1482,24 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+           
+          {userPlan === 'pro' && monthlyUsage > currentLimits.aiCredits * 0.8 && (
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="text-orange-600 mt-0.5" size={20} />
+              <div>
+                <h3 className="font-medium text-orange-800 mb-1">⚠️ Monthly Limit Warning</h3>
+                <p className="text-sm text-orange-700">
+                  You've used {monthlyUsage} of your {currentLimits.aiCredits} monthly AI captions. 
+                  {monthlyUsage >= currentLimits.aiCredits ? 
+                    ' You can still generate unlimited template captions!' : 
+                    ` ${currentLimits.aiCredits - monthlyUsage} AI captions remaining this month.`
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="space-y-6">
@@ -1244,59 +1612,94 @@ export default function Home() {
                   </div>
 
                   <button
-                    onClick={generateCaption}
-                    disabled={isGenerating || !topic.trim() || !canGenerateCaption()}
-                    className="w-full text-white py-3 px-6 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                    style={{ background: isGenerating || !topic.trim() || !canGenerateCaption() ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
-                  >
-                    {isGenerating ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                        Generating with AI...
-                      </>
-                    ) : !canGenerateCaption() ? (
-                      <>
-                        <Lock size={16} />
-                        {userPlan === 'free' && aiCredits === 0 ? 'AI Credits Used - Template Mode' : userPlan === 'credits' ? 'No Credits Left' : 'Upgrade Required'}
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles size={16} />
-                        Generate Caption
-                      </>
-                    )}
-                  </button>
+  onClick={generateCaption}
+  disabled={isGenerating || !topic.trim() || !canGenerateCaption()}
+  className="w-full text-white py-3 px-6 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+  style={{ background: isGenerating || !topic.trim() || !canGenerateCaption() ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
+>
+  {isGenerating ? (
+    <>
+      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+      Generating with AI...
+    </>
+  ) : !canGenerateCaption() ? (
+    <>
+      <Lock size={16} />
+      {userPlan === 'pro' && monthlyUsage >= currentLimits.aiCredits ? 'Monthly Limit Reached' :
+       userPlan === 'free' && aiCredits === 0 ? 'AI Credits Used - Template Mode' : 
+       userPlan === 'credits' ? 'No Credits Left' : 'Upgrade Required'}
+    </>
+  ) : (
+    <>
+      <Sparkles size={16} />
+      Generate Caption
+    </>
+  )}
+</button>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800">Generated Caption</h3>
-                  
-                  <textarea
-                    value={generatedCaption}
-                    readOnly
-                    placeholder="Your AI-generated caption will appear here..."
-                    className="w-full h-64 p-4 border border-gray-300 rounded-lg bg-gray-50 resize-none"
-                  />
-                  
-                  {generatedCaption && (
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        onClick={() => copyToClipboard(generatedCaption)}
-                        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                      >
-                        <Copy size={16} className="text-gray-600" />
-                        Copy
-                      </button>
-                      <button
-                        onClick={saveCaption}
-                        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-                      >
-                        <Save size={16} className="text-gray-600" />
-                        Save
-                      </button>
-                    </div>
-                  )}
-                </div>
+  <div className="flex items-center justify-between">
+    <h3 className="text-lg font-semibold text-gray-800">Generated Caption</h3>
+    {showVariations && captionVariations.length > 1 && (
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-600">Variation:</span>
+        <div className="flex gap-1">
+          {captionVariations.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => selectVariation(index)}
+            // onClick={() => {
+           //   setSelectedVariation(index);
+            //  setGeneratedCaption(captionVariations[index]);
+           //   }}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                selectedVariation === index
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+  
+  <textarea
+    value={generatedCaption}
+    readOnly
+    placeholder="Your AI-generated caption will appear here..."
+    className="w-full h-64 p-4 border border-gray-300 rounded-lg bg-gray-50 resize-none"
+  />
+  
+  {generatedCaption && (
+    <div className="flex gap-2 mt-3">
+      <button
+        onClick={() => copyToClipboard(generatedCaption)}
+        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+      >
+        <Copy size={16} className="text-gray-600" />
+        Copy
+      </button>
+      <button
+        onClick={saveCaption}
+        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+      >
+        <Save size={16} className="text-gray-600" />
+        Save
+      </button>
+      {showVariations && captionVariations.length > 1 && (
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>•</span>
+          <span>{captionVariations.length} variations generated</span>
+        </div>
+      )}
+    </div>
+  )}
+  <StylingPanel />
+</div>
               </div>
             </div>
           )}
@@ -1482,6 +1885,7 @@ export default function Home() {
 
       <UpgradeModal />
       <AuthModal />
+      <ContactModal />
     </div>
   );
 }
