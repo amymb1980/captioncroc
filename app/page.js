@@ -1848,10 +1848,13 @@ const ContactModal = () => {
                   </ul>
                   {userPlan !== 'pro' && (
                     <button 
-                      onClick={() => setUserPlan('pro')}
+                      onClick={() => {
+                        setUpgradeType('pro');
+                        setShowContactModal(true);
+                      }}
                       className="w-full mt-6 bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors"
                     >
-                      Upgrade to Pro
+                      Request Pro Upgrade - $9/month
                     </button>
                   )}
                 </div>
