@@ -1848,10 +1848,13 @@ const ContactModal = () => {
                   </ul>
                   {userPlan !== 'pro' && (
                     <button 
-                      onClick={() => setUserPlan('pro')}
+                      onClick={() => {
+                        setUpgradeType('pro');
+                        setShowContactModal(true);
+                      }}
                       className="w-full mt-6 bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors"
                     >
-                      Upgrade to Pro
+                      Request Pro Upgrade - $9/month
                     </button>
                   )}
                 </div>
@@ -1871,10 +1874,13 @@ const ContactModal = () => {
                     <li className="flex items-center gap-2"><Lock size={16} className="text-gray-400" /> Limited to 10 favorites</li>
                   </ul>
                   <button 
-                    onClick={() => {setUserPlan('credits'); setAiCredits(prev => prev + 50);}}
+                    onClick={() => {
+                      setUpgradeType('credits');
+                      setShowContactModal(true);
+                    }}
                     className="w-full mt-6 bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors"
                   >
-                    {userPlan === 'credits' ? 'Buy More Credits' : 'Buy Credits'}
+                    {userPlan === 'credits' ? 'Buy More Credits' : 'Request Credit Pack - $5'}
                   </button>
                 </div>
               </div>
