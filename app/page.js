@@ -22,6 +22,7 @@ export default function Home() {
   const [showLandingPage, setShowLandingPage] = useState(true);
   const [showStylingPanel, setShowStylingPanel] = useState(false);
   const [showVariations, setShowVariations] = useState(false);
+  const [showFbMessage, setShowFbMessage] = useState(false);
   
   // Subscription & Credits State
   const [userPlan, setUserPlan] = useState('free'); // 'free', 'pro', 'credits'
@@ -786,7 +787,7 @@ const applyCaptionStyle = (styleType) => {
                 <span className="font-medium text-gray-700">Continue with Google</span>
               </button>
               
-              <button
+             /* <button
                 onClick={() => handleOAuthLogin('Facebook')}
                 disabled={authLoading}
                 className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors disabled:opacity-50"
@@ -795,7 +796,31 @@ const applyCaptionStyle = (styleType) => {
                   <span className="text-white text-xs font-bold">f</span>
                 </div>
                 <span className="font-medium text-gray-700">Continue with Facebook</span>
+              </button>*/
+              <button
+                onClick={() => setShowFbMessage(true)}
+                className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">f</span>
+                </div>
+                <span className="font-medium text-gray-700">Continue with Facebook</span>
               </button>
+              
+              {showFbMessage && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+                  Facebook login coming soon! Please use Google sign-in for now.
+                  <button 
+                    onClick={() => setShowFbMessage(false)} 
+                    className="ml-2 text-blue-800 underline"
+                  >
+                    Got it
+                  </button>
+                </div>
+              )}
+
+
+                  
             </div>
 
             <div className="flex items-center gap-4 mb-6">
