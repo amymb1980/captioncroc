@@ -786,17 +786,7 @@ const applyCaptionStyle = (styleType) => {
                 </div>
                 <span className="font-medium text-gray-700">Continue with Google</span>
               </button>
-              
-             /* <button
-                onClick={() => handleOAuthLogin('Facebook')}
-                disabled={authLoading}
-                className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">f</span>
-                </div>
-                <span className="font-medium text-gray-700">Continue with Facebook</span>
-              </button>*/
+            
               <button
                 onClick={() => setShowFbMessage(true)}
                 className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors"
