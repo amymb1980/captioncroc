@@ -556,7 +556,7 @@ export default function Home() {
                 </div>
                 <span className="font-medium text-gray-700">Continue with Google</span>
               </button>
-              
+              {/* Facebook OAuth - Disabled for now
               <button
                 onClick={() => handleOAuthLogin('Facebook')}
                 disabled={authLoading}
@@ -567,6 +567,7 @@ export default function Home() {
                 </div>
                 <span className="font-medium text-gray-700">Continue with Facebook</span>
               </button>
+              */}
             </div>
 
             <div className="flex items-center gap-4 mb-6">
