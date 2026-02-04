@@ -351,14 +351,16 @@ export default function Home() {
 
   const handleAuth = async (email, password, mode) => {
     setAuthLoading(true);
-    
+     console.log('🔐 handleAuth called with:', { email, password: password ? '***' : 'EMPTY', mode });
     let result;
     if (mode === 'signup') {
+      console.log('📝 Calling signUp...');
       result = await supabase.auth.signUp({ email, password });
     } else {
+      console.log('🔑 Calling signInWithPassword...');
       result = await supabase.auth.signInWithPassword({ email, password });
     }
-
+    console.log('📨 Auth result:', result);
     if (result.error) {
       alert(result.error.message);
     } else {
