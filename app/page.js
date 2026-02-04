@@ -351,7 +351,20 @@ export default function Home() {
 
   const handleAuth = async (email, password, mode) => {
     setAuthLoading(true);
-     console.log('🔐 handleAuth called with:', { email, password: password ? '***' : 'EMPTY', mode });
+    / Add validation
+  if (!email || !password) {
+    alert('Please enter both email and password');
+    setAuthLoading(false);
+    return;
+  }
+  
+  if (password.length < 6) {
+    alert('Password must be at least 6 characters');
+    setAuthLoading(false);
+    return;
+  }
+  
+  console.log('🔐 Attempting auth with:', { email, mode });
     let result;
     if (mode === 'signup') {
       console.log('📝 Calling signUp...');
