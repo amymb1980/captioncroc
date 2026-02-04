@@ -5,6 +5,10 @@ import { Copy, Sparkles, Instagram, Twitter, Facebook, Linkedin, AlertCircle, Sa
 import { supabase } from '../lib/supabase';
 
 export default function Home() {
+  console.log('=== AUTH DEBUG ===');
+  console.log('User:', user);
+  console.log('showLandingPage:', showLandingPage);
+  console.log('Loading:', loading);
 
 // Basic state
   const [platform, setPlatform] = useState('Instagram');
