@@ -5,12 +5,7 @@ import { Copy, Sparkles, Instagram, Twitter, Facebook, Linkedin, AlertCircle, Sa
 import { supabase } from '../lib/supabase';
 
 export default function Home() {
-  console.log('=== AUTH DEBUG ===');
-  console.log('User:', user);
-  console.log('showLandingPage:', showLandingPage);
-  console.log('Loading:', loading);
-
-// Basic state
+  // Basic state
   const [platform, setPlatform] = useState('Instagram');
   const [category, setCategory] = useState('promote');
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -35,7 +30,7 @@ export default function Home() {
   const [authMode, setAuthMode] = useState('login');
   const [authLoading, setAuthLoading] = useState(false);
 
-// Subscription Configuration
+  // Subscription Configuration
   const subscriptionLimits = {
     free: {
       categories: ['promote', 'engage', 'educate'],
@@ -97,7 +92,8 @@ export default function Home() {
       free: false 
     }
   ];
-  // Caption Template Library - THE CORE OF THE NEW SYSTEM!
+
+  // Caption Template Library
   const captionTemplates = {
     promote: {
       Instagram: [
@@ -284,6 +280,7 @@ export default function Home() {
       ]
     }
   };
+
   const currentPlatform = platforms.find(p => p.name === platform);
   const currentLimits = subscriptionLimits[userPlan] || subscriptionLimits.free;
   const favouriteCount = savedCaptions.filter(c => c.is_favourite).length;
@@ -302,6 +299,7 @@ export default function Home() {
     if (userPlan === 'pro') return true;
     return favouriteCount < currentLimits.maxFavourites;
   };
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -350,6 +348,7 @@ export default function Home() {
       setSavedCaptions(data || []);
     }
   };
+
   const handleAuth = async (email, password, mode) => {
     setAuthLoading(true);
     
@@ -388,13 +387,12 @@ export default function Home() {
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
+
   const selectTemplate = (template) => {
     setSelectedTemplate(template);
     
-    // Pre-fill with blanks for user to fill
     let caption = template.template;
     
-    // Add hashtags if enabled
     if (includeHashtags) {
       const hashtags = `\n\n#${category} #socialmedia #content`;
       caption += hashtags;
@@ -402,6 +400,7 @@ export default function Home() {
     
     setCustomizedCaption(caption);
   };
+
   const saveCaption = async () => {
     if (!user || !customizedCaption) return;
 
@@ -525,6 +524,7 @@ export default function Home() {
     a.click();
     window.URL.revokeObjectURL(url);
   };
+
   const AuthModal = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -560,18 +560,6 @@ export default function Home() {
                 </div>
                 <span className="font-medium text-gray-700">Continue with Google</span>
               </button>
-              {/* Facebook OAuth - Disabled for now
-              <button
-                onClick={() => handleOAuthLogin('Facebook')}
-                disabled={authLoading}
-                className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">f</span>
-                </div>
-                <span className="font-medium text-gray-700">Continue with Facebook</span>
-              </button>
-              */}
             </div>
 
             <div className="flex items-center gap-4 mb-6">
@@ -631,7 +619,8 @@ export default function Home() {
       </div>
     );
   };
-const UpgradeModal = () => (
+
+  const UpgradeModal = () => (
     showUpgradeModal && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
@@ -642,7 +631,6 @@ const UpgradeModal = () => (
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              {/* Free Plan */}
               <div className={`border-2 rounded-lg p-6 ${userPlan === 'free' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
                 <div className="text-center mb-4">
                   <h3 className="text-xl font-bold text-gray-800">Free Plan</h3>
@@ -657,7 +645,6 @@ const UpgradeModal = () => (
                 </ul>
               </div>
 
-              {/* Pro Plan */}
               <div className="border-2 border-teal-500 rounded-lg p-6 relative">
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <span className="bg-teal-500 text-white px-3 py-1 rounded-full text-sm">Recommended</span>
@@ -693,6 +680,7 @@ const UpgradeModal = () => (
       </div>
     )
   );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 to-orange-50 flex items-center justify-center">
@@ -705,10 +693,10 @@ const UpgradeModal = () => (
       </div>
     );
   }
+
   if (showLandingPage) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-orange-50">
-        {/* Hero Section */}
         <div className="relative overflow-hidden">
           <div className="max-w-6xl mx-auto px-6 pt-20 pb-16">
             <div className="text-center">
@@ -766,7 +754,6 @@ const UpgradeModal = () => (
           </div>
         </div>
 
-        {/* Categories Preview */}
         <div className="bg-white py-20">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16">
@@ -788,7 +775,7 @@ const UpgradeModal = () => (
             </div>
           </div>
         </div>
-{/* How It Works */}
+
         <div className="bg-gray-50 py-20">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16">
@@ -818,7 +805,6 @@ const UpgradeModal = () => (
           </div>
         </div>
 
-        {/* Pricing Preview */}
         <div className="bg-white py-20">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-12">
@@ -865,16 +851,12 @@ const UpgradeModal = () => (
           </div>
         </div>
 
-        {/* Final CTA */}
         <div className="py-20" style={{ background: 'linear-gradient(135deg, #EA8953, #007B40)' }}>
           <div className="max-w-4xl mx-auto px-6 text-center">
             <h3 className="text-3xl font-bold text-white mb-4">Ready to stop staring at blank screens?</h3>
             <p className="text-xl mb-8" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Join creators who always know what to post</p>
             <button
-              onClick={() => {
-                setAuthMode('signup'); 
-                setShowAuthModal(true);
-              }}
+              onClick={() => {setAuthMode('signup'); setShowAuthModal(true);}}
               className="bg-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-all shadow-lg"
               style={{ color: '#007B40' }}
             >
@@ -887,7 +869,8 @@ const UpgradeModal = () => (
       </div>
     );
   }
-if (!user) {
+
+  if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 to-orange-50 flex items-center justify-center">
         <div className="text-center">
@@ -913,7 +896,8 @@ if (!user) {
       </div>
     );
   }
-return (
+
+  return (
     <div className="max-w-6xl mx-auto p-6 bg-gradient-to-br from-teal-50 to-orange-50 min-h-screen">
       <div className="bg-white rounded-xl shadow-lg">
         <div className="p-8 border-b border-gray-200">
@@ -1044,7 +1028,8 @@ return (
             </button>
           </div>
         </div>
-<div className="p-8">
+
+        <div className="p-8">
           {activeTab === 'generator' && (
             <div>
               <div className="bg-teal-50 border border-teal-200 rounded-lg p-4 mb-6">
@@ -1060,7 +1045,6 @@ return (
               </div>
 
               <div className="grid md:grid-cols-2 gap-8">
-                {/* Category & Platform Selection */}
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">What's your goal?</label>
@@ -1130,7 +1114,7 @@ return (
                       })}
                     </div>
                   </div>
-{/* Template Selection */}
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Choose Template</label>
                     {captionTemplates[category]?.[platform]?.length > 0 ? (
@@ -1175,7 +1159,7 @@ return (
                     </label>
                   </div>
                 </div>
-{/* Caption Preview */}
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-800">Your Caption</h3>
@@ -1237,7 +1221,8 @@ return (
               </div>
             </div>
           )}
-{activeTab === 'saved' && (
+
+          {activeTab === 'saved' && (
             <div>
               {savedCaptions.length === 0 ? (
                 <div className="text-center py-12">
@@ -1308,7 +1293,8 @@ return (
               )}
             </div>
           )}
-{activeTab === 'export' && (
+
+          {activeTab === 'export' && (
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Export Settings</h2>
               <div className="bg-teal-50 border border-teal-200 rounded-lg p-6">
@@ -1332,7 +1318,8 @@ return (
               </div>
             </div>
           )}
-{activeTab === 'pricing' && (
+
+          {activeTab === 'pricing' && (
             <div>
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-800 mb-2">Choose Your Plan</h2>
@@ -1340,7 +1327,6 @@ return (
               </div>
 
               <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                {/* Free Plan */}
                 <div className={`border-2 rounded-lg p-6 ${userPlan === 'free' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
                   <div className="text-center mb-6">
                     <h3 className="text-xl font-bold text-gray-800">Free Plan</h3>
@@ -1355,7 +1341,6 @@ return (
                   </ul>
                 </div>
 
-                {/* Pro Plan */}
                 <div className={`border-2 rounded-lg p-6 relative ${userPlan === 'pro' ? 'border-teal-500 bg-teal-50' : 'border-teal-500'}`}>
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <span className="bg-teal-500 text-white px-3 py-1 rounded-full text-sm">Recommended</span>
