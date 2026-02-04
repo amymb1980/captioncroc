@@ -351,7 +351,7 @@ export default function Home() {
 
   const handleAuth = async (email, password, mode) => {
     setAuthLoading(true);
-    / Add validation
+    // Add validation
   if (!email || !password) {
     alert('Please enter both email and password');
     setAuthLoading(false);
