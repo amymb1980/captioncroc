@@ -611,7 +611,10 @@ export default function Home() {
               </div>
               
               <button
-                onClick={() => handleAuth(email, password, authMode)}
+                onClick={() => {
+                  console.log('📝 Button clicked with:', { email, password: password ? '***' : 'EMPTY', authMode });
+                  handleAuth(email, password, authMode);
+                }}
                 disabled={authLoading}
                 className="w-full text-white py-3 px-4 rounded-lg font-medium disabled:opacity-50 transition-all"
                 style={{ background: authLoading ? '#9CA3AF' : 'linear-gradient(135deg, #EA8953, #007B40)' }}
