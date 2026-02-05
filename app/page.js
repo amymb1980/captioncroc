@@ -383,21 +383,25 @@ export default function Home() {
     setAuthLoading(false);
   };
 
-  const handleOAuthLogin = async (provider) => {
-    setAuthLoading(true);
-    
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: provider.toLowerCase(),
-      options: { redirectTo: window.location.origin }
-    });
-
-    if (error) {
-      console.error('OAuth error:', error);
-      alert('OAuth login failed. Please try again.');
+ const handleOAuthLogin = async (provider) => {
+  setAuthLoading(true);
+  
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: provider.toLowerCase(),
+    options: { 
+      redirectTo: 'https://captioncroc-qot5yvq6e-amys-projects-bbc6f3e9.vercel.app'
     }
-    
-    setAuthLoading(false);
-  };
+  });
+
+  if (error) {
+    console.error('OAuth error:', error);
+    alert('OAuth login failed. Please try again.');
+  } else {
+    console.log('OAuth initiated:', data);
+  }
+  
+  setAuthLoading(false);
+};
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
