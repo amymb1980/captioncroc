@@ -300,6 +300,28 @@ export default function Home() {
     return favouriteCount < currentLimits.maxFavourites;
   };
 
+   const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    
+    if (accessToken) {
+      console.log('🔑 Found access token in URL, setting session...');
+      
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: hashParams.get('refresh_token') || ''
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error('❌ Session error:', error);
+        } else {
+          console.log('✅ Session set successfully');
+          // Clear the hash from URL
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      });
+    }
+  }, []);
+
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
