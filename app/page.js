@@ -300,29 +300,34 @@ export default function Home() {
     return favouriteCount < currentLimits.maxFavourites;
   };
 
-  useEffect(() => {
-  const checkUser = async () => {
-    // Handle OAuth callback hash first
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
+ // Handle OAuth hash IMMEDIATELY (before React even renders)
+if (typeof window !== 'undefined' && window.location.hash) {
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+  
+  if (accessToken && refreshToken) {
+    console.log('🔑 OAuth token found, setting session immediately...');
     
-    if (accessToken) {
-      console.log('🔑 Found access token in URL, setting session...');
-      
-      const { data, error } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: hashParams.get('refresh_token') || ''
-      });
-      
+    supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    }).then(({ data, error }) => {
       if (error) {
         console.error('❌ Session error:', error);
       } else {
-        console.log('✅ Session set successfully');
+        console.log('✅ OAuth session set!');
+        // Clear hash from URL
         window.history.replaceState(null, '', window.location.pathname);
+        // Force reload to trigger normal auth flow
+        window.location.reload();
       }
-    }
-    
-    // Now check for existing session
+    });
+  }
+}
+
+useEffect(() => {
+  const checkUser = async () => {
     console.log('🔄 Checking user session...');
     
     const { data: { session }, error } = await supabase.auth.getSession();
