@@ -323,42 +323,69 @@ export default function Home() {
 
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
+  const checkUser = async () => {
+    // Handle OAuth callback hash first
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    
+    if (accessToken) {
+      console.log('🔑 Found access token in URL, setting session...');
+      
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: hashParams.get('refresh_token') || ''
+      });
       
       if (error) {
-        console.error('Error:', error);
-        setLoading(false);
-        return;
-      }
-      
-      if (session?.user) {
-        setUser(session.user);
-        setShowLandingPage(false);
-        loadCaptions(session.user.id);
-      }
-      
-      setLoading(false);
-    };
-
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        setShowLandingPage(false);
-        setTimeout(() => loadCaptions(session.user.id), 0);
+        console.error('❌ Session error:', error);
       } else {
-        setUser(null);
-        setShowLandingPage(true);
-        setSavedCaptions([]);
-        setUserPlan('free');
+        console.log('✅ Session set successfully');
+        window.history.replaceState(null, '', window.location.pathname);
       }
-    });
+    }
+    
+    // Now check for existing session
+    console.log('🔄 Checking user session...');
+    
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    if (error) {
+      console.error('Error:', error);
+      setLoading(false);
+      return;
+    }
+    
+    if (session?.user) {
+      console.log('✅ User found:', session.user.email);
+      setUser(session.user);
+      setShowLandingPage(false);
+      loadCaptions(session.user.id);
+    } else {
+      console.log('❌ No session found');
+    }
+    
+    setLoading(false);
+  };
 
-    return () => subscription.unsubscribe();
-  }, []);
+  checkUser();
 
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    console.log('🔔 Auth state changed:', event, session?.user?.email || 'No user');
+    
+    if (session?.user) {
+      setUser(session.user);
+      setShowLandingPage(false);
+      setTimeout(() => loadCaptions(session.user.id), 0);
+    } else {
+      setUser(null);
+      setShowLandingPage(true);
+      setSavedCaptions([]);
+      setUserPlan('free');
+    }
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
   const loadCaptions = async (userId) => {
     const { data, error } = await supabase
       .from('captions')
